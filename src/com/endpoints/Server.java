@@ -18,21 +18,24 @@ public class Server {
     public static final int DATABASELENGTH = 4;
     public static final int PLATENOTFOUND = 5;
     public static final int PLATEFOUND = 6;
-    public static final int COMMANDUNKNOWN = -2;
+    public static final int COMMANDUNKNOWN = -1;
 
     public static final int MAX_PACKET_SIZE = 274;
     public static final String NOT_FOUND = "NOT_FOUND";
 
-    private Map<String, String> plates = new HashMap<>(); /* Plate, owner */
+    private static Map<String, String> plates = new HashMap<>(); /* Plate, owner */
 
-    public void main(String[] args){
-        int port;
+    public static void main(String[] args){
+        int port = Integer.parseInt(args[1]);
         DatagramSocket socket;
 
-        if(args.length != 2)
+        /* Validate data */
+        if(args.length != 2) {
             printLog(USAGE, "");
+            return;
+        }
 
-        port = Integer.parseInt(args[1]);
+        /* Open socket */
         try {
             socket = new DatagramSocket(port);
         } catch (SocketException e) {
@@ -40,6 +43,7 @@ public class Server {
             return;
         }
 
+        /* Prepare and wait for messages from clients, parsing them when received. */
         byte[] buf = new byte[MAX_PACKET_SIZE];
         DatagramPacket packet = new DatagramPacket(buf, MAX_PACKET_SIZE);
 
@@ -54,9 +58,8 @@ public class Server {
         }
     }
 
-    private byte[] parsePacketInfo(DatagramPacket packet) {
+    private static byte[] parsePacketInfo(DatagramPacket packet) {
         String message = new String(packet.getData());
-        byte[] ret;
         String[] args = message.split(" ");
 
         if((args[0].equals("REGISTER") || args[0].equals("Register") || args[0].equals("register")) &&
@@ -66,16 +69,21 @@ public class Server {
                 printLog(PLATEALREADYEXISTSERROR, registerResult.toString());
             else
                 printLog(DATABASELENGTH, registerResult.toString());
-            return new byte[]{(byte)registerResult.intValue()};
+            message = registerResult + '\n' + args[1] + ' ' + args[2];
+            return message.getBytes();
         }
         else if(args[0].equals("LOOKUP") || args[0].equals("Lookup") || args[0].equals("lookup") &&
                 args.length == 2){
             String lookupResult = lookupPlate(args[1]);
-            if(lookupResult.equals(NOT_FOUND))
+            if(lookupResult.equals(NOT_FOUND)) {
                 printLog(PLATENOTFOUND, args[1]);
-            else
+                message = "-1\n" + args[1];
+            }
+            else {
                 printLog(PLATEFOUND, lookupResult);
-            return lookupResult.getBytes();
+                message = plates.size() + '\n' + args[1] + ' ' + lookupResult;
+            }
+            return message.getBytes();
         }
         else {
             printLog(COMMANDUNKNOWN, message);
@@ -83,13 +91,13 @@ public class Server {
         }
     }
 
-    private String lookupPlate(String plate) {
+    private static String lookupPlate(String plate) {
         if(plates.containsKey(plate))
             return plates.get(plate);
         else return NOT_FOUND;
     }
 
-    private int registerPlate(String plate, String owner) {
+    private static int registerPlate(String plate, String owner) {
         if(plates.containsKey(plate))
             return -1;
         else{
@@ -98,7 +106,7 @@ public class Server {
         }
     }
 
-    private void printLog(int number, String arg) {
+    private static void printLog(int number, String arg) {
         switch(number){
             case USAGE:
                 System.out.println("Usage: java Server <port number>");
