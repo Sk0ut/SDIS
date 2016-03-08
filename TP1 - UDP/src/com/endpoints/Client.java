@@ -1,5 +1,3 @@
-package com.endpoints;
-
 import java.io.IOException;
 import java.net.*;
 
@@ -15,22 +13,29 @@ public class Client {
 
     public static void main(String[] args) {
         /* Validate data */
+        if(args.length < 4){
+            printLog(USAGE, "");
+            return;
+        }
 
-        if(!(
+        /*if(!(
                 ((args[3].equals("REGISTER") || args[3].equals("Register") || args[3].equals("register")) && args.length == 6)
                 ||
                 ((args[3].equals("LOOKUP") || args[3].equals("Lookup") || args[3].equals("lookup")) && args.length == 5))){
             printLog(USAGE, "");
-        }
+            return;
+        }*/
 
         /* Open socket */
         int port = Integer.parseInt(args[2]);
         DatagramSocket socket;
+        InetAddress address;
         try {
-            InetAddress address = InetAddress.getByName(args[0]);
-            socket = new DatagramSocket(port, address);
+            address = InetAddress.getByName(args[1]);
+            socket = new DatagramSocket();
         } catch (SocketException | UnknownHostException e) {
-            printLog(SOCKETOPENERROR, args[2]);
+            System.out.println(e.getMessage());
+            //printLog(SOCKETOPENERROR, args[2]);
             return;
         }
 
@@ -42,7 +47,7 @@ public class Client {
 
         byte[] buf = message.getBytes();
 
-        DatagramPacket packet = new DatagramPacket(buf, MAX_PACKET_SIZE);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
 
         /* Send message */
         try {
@@ -56,6 +61,8 @@ public class Client {
 
         try {
             socket.receive(packet);
+            String answer = new String(packet.getData());
+            System.out.println(answer);
         } catch (IOException e) {
             printLog(SOCKETREADERROR, args[2]);
         }

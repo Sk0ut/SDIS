@@ -1,8 +1,7 @@
-package com.endpoints;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,14 +25,14 @@ public class Server {
     private static Map<String, String> plates = new HashMap<>(); /* Plate, owner */
 
     public static void main(String[] args){
-        int port = Integer.parseInt(args[1]);
-        DatagramSocket socket;
-
         /* Validate data */
         if(args.length != 2) {
             printLog(USAGE, "");
             return;
         }
+
+        int port = Integer.parseInt(args[1]);
+        DatagramSocket socket;
 
         /* Open socket */
         try {
@@ -45,12 +44,15 @@ public class Server {
 
         /* Prepare and wait for messages from clients, parsing them when received. */
         byte[] buf = new byte[MAX_PACKET_SIZE];
-        DatagramPacket packet = new DatagramPacket(buf, MAX_PACKET_SIZE);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
         while(true){
             try {
                 socket.receive(packet);
-                socket.send(new DatagramPacket(parsePacketInfo(packet), packet.getLength()));
+                int clientPort = packet.getPort();
+                InetAddress clientAddress = packet.getAddress();
+                byte[] answer = parsePacketInfo(packet);
+                socket.send(new DatagramPacket(answer, answer.length, clientAddress, clientPort));
             } catch (IOException e) {
                 printLog(SOCKETREADERROR, args[1]);
                 return;
@@ -62,18 +64,16 @@ public class Server {
         String message = new String(packet.getData());
         String[] args = message.split(" ");
 
-        if((args[0].equals("REGISTER") || args[0].equals("Register") || args[0].equals("register")) &&
-                args.length == 3){
+        if((args[0].equalsIgnoreCase("REGISTER")) && args.length == 3){
             Integer registerResult = registerPlate(args[1], args[2]);
             if(registerResult == -1)
-                printLog(PLATEALREADYEXISTSERROR, registerResult.toString());
+                printLog(PLATEALREADYEXISTSERROR, args[1]);
             else
                 printLog(DATABASELENGTH, registerResult.toString());
-            message = registerResult + '\n' + args[1] + ' ' + args[2];
+            message = args[1] + ' ' + args[2];
             return message.getBytes();
         }
-        else if(args[0].equals("LOOKUP") || args[0].equals("Lookup") || args[0].equals("lookup") &&
-                args.length == 2){
+        else if(args[0].equalsIgnoreCase("LOOKUP") && args.length == 2){
             String lookupResult = lookupPlate(args[1]);
             if(lookupResult.equals(NOT_FOUND)) {
                 printLog(PLATENOTFOUND, args[1]);
@@ -81,7 +81,7 @@ public class Server {
             }
             else {
                 printLog(PLATEFOUND, lookupResult);
-                message = plates.size() + '\n' + args[1] + ' ' + lookupResult;
+                message = plates.size() + '\n' + args[2] + ' ' + lookupResult;
             }
             return message.getBytes();
         }
