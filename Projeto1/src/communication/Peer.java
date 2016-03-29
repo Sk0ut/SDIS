@@ -1,16 +1,13 @@
 package communication;
 
-import general.MalformedMessageException;
-import general.SubProtocolManager;
-import subprotocols.Delete;
-import subprotocols.Getchunk;
-import subprotocols.Putchunk;
-import subprotocols.Remove;
+import general.MulticastListener;
+import subprotocol.DeleteListener;
+import subprotocol.GetChunkListener;
+import subprotocol.PutChunkListener;
+import subprotocol.RemovedListener;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 
 /**
@@ -18,39 +15,60 @@ import java.net.MulticastSocket;
  */
 public class Peer {
 
-    InetAddress address;
-    SubProtocolManager spm;
-    int port;
+    private InetSocketAddress mcAddress;
+    private InetSocketAddress mdbAddress;
+    private InetSocketAddress mdrAddress;
+
+    MulticastListener mcListener;
+    MulticastListener mdbListener;
+    MulticastListener mdrListener;
     public static int senderId;
-    MulticastSocket receiveSocket;
 
-    public Peer(String inetaddress, int port, int senderId) throws IOException {
-        address = InetAddress.getByName(inetaddress);
-        this.port = port;
-        Peer.senderId = senderId;
-        spm = new SubProtocolManager();
-        SubProtocolManager.addSubProtocol(new Putchunk());
-        SubProtocolManager.addSubProtocol(new Getchunk());
-        SubProtocolManager.addSubProtocol(new Remove());
-        SubProtocolManager.addSubProtocol(new Delete());
-        receiveSocket = new MulticastSocket(port);
-        receiveSocket.setTimeToLive(1);
-        receiveSocket.joinGroup(address);
+    public Peer(int id, String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress, int mdrPort) throws IOException {
+        this.mcAddress = new InetSocketAddress(mcAddress, mcPort);
+        this.mdbAddress = new InetSocketAddress(mdbAddress, mdbPort);
+        this.mdrAddress = new InetSocketAddress(mdrAddress, mdrPort);
+        Peer.senderId = id;
     }
 
-    public void receiveAndDispatch() throws IOException, MalformedMessageException {
-        byte[] buf = new byte[255];
-        DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
-        receiveSocket.receive(receivePacket);
-        String receivedMessage = new String(receivePacket.getData());
-        receivedMessage = receivedMessage.replaceAll("\u0000", "");
-        spm.dispatchMessage(receivedMessage);
+    public void start() {
+        try {
+            MulticastSocket receiveSocketMc = new MulticastSocket(mcAddress.getPort());
+            MulticastSocket receiveSocketMdb = new MulticastSocket(mdbAddress.getPort());
+            MulticastSocket receiveSocketMdr = new MulticastSocket(mdrAddress.getPort());
+            receiveSocketMc.joinGroup(mcAddress.getAddress());
+            receiveSocketMdb.joinGroup(mdbAddress.getAddress());
+            receiveSocketMdr.joinGroup(mdrAddress.getAddress());
+            receiveSocketMc.setTimeToLive(1);
+            receiveSocketMdr.setTimeToLive(1);
+            receiveSocketMdb.setTimeToLive(1);
+
+
+            mcListener = new MulticastListener(receiveSocketMc);
+            mdbListener = new MulticastListener(receiveSocketMdb);
+            mdrListener = new MulticastListener(receiveSocketMdr);
+            mcListener.addSubProtocol(new PutChunkListener());
+            mcListener.addSubProtocol(new GetChunkListener());
+            mcListener.addSubProtocol(new RemovedListener());
+            mcListener.addSubProtocol(new DeleteListener());
+
+            new Thread(mcListener).start();
+            new Thread(mdbListener).start();
+            new Thread(mdrListener).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void send(byte [] sendbuf) throws IOException {
-        DatagramSocket sendSocket = new DatagramSocket();
-        DatagramPacket sendPacket = new DatagramPacket(sendbuf, sendbuf.length, address, port);
-        sendSocket.send(sendPacket);
-        sendSocket.close();
+    public InetSocketAddress getMcAddress() {
+        return mcAddress;
+    }
+
+    public InetSocketAddress getMdbAddress() {
+        return mdbAddress;
+    }
+
+    public InetSocketAddress getMdrAddress() {
+        return mdrAddress;
     }
 }

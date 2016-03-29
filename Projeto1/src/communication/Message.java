@@ -1,5 +1,6 @@
 package communication;
 
+import java.io.UnsupportedEncodingException;
 import java.util.StringJoiner;
 
 /**
@@ -25,7 +26,12 @@ public abstract class Message {
     }
 
     public byte [] getBytes() {
-        byte [] headerBytes = getHeader().getBytes();
+        byte [] headerBytes = new byte[0];
+        try {
+            headerBytes = getHeader().concat("\n\n").getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         byte [] bytes = new byte[headerBytes.length + body.length];
         System.arraycopy(headerBytes, 0, bytes, 0, headerBytes.length);
         System.arraycopy(body, 0, bytes, headerBytes.length, body.length);
@@ -34,7 +40,7 @@ public abstract class Message {
     }
 
     public String getHeader() {
-        StringJoiner sj = new StringJoiner(" ", "", "\n\n");
+        StringJoiner sj = new StringJoiner(" ");
         sj.add(messageType)
                 .add(version)
                 .add(senderId)
