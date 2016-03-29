@@ -21,7 +21,7 @@ public class Getchunk extends SubProtocol {
         if (args.length != 4)
             throw new MalformedMessageException("Wrong number of arguments for the GETCHUNK protocol: 4 arguments must be present");
 
-                /* Validate version */
+        /* Validate version */
         if(args[0].length() != 3 ||
                 !Character.isDigit(args[0].charAt(0)) || args[0].charAt(1) != '.' ||
                 !Character.isDigit(args[0].charAt(2)))

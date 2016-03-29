@@ -1,6 +1,8 @@
+import communication.Message;
 import communication.Peer;
 import communication.Receiver;
 import communication.Sender;
+import communication.message.StoredMessage;
 
 import java.io.IOException;
 
@@ -15,6 +17,12 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Peer peer = new Peer(INET_ADDR, PORT, SENDERID);
+
+        StoredMessage.Parser parser = new StoredMessage.Parser();
+        Message message = new StoredMessage(Integer.toString(2), "gagdgaesf", Integer.toString(5));
+
+        parser.parse(message.getBytes());
+
         new Thread(new Sender(peer)).start();
         new Thread(new Receiver(peer)).start();
     }

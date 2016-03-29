@@ -12,7 +12,7 @@ public class SubProtocolManager {
     }
 
     public void dispatchMessage(String message) throws MalformedMessageException {
-        String[] args = message.split(" ");
+        String[] args = message.trim().replaceAll("\\s+", " ").split(" ");
         for (SubProtocol subProtocol : subProtocols)
             if (subProtocol.messageOwner(args[0])) {
                 args = Arrays.copyOfRange(args, 1, args.length);

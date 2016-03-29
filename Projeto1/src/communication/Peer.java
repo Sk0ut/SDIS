@@ -47,8 +47,7 @@ public class Peer {
         spm.dispatchMessage(receivedMessage);
     }
 
-    public void send(String message) throws IOException {
-        byte[] sendbuf = message.getBytes();
+    public void send(byte [] sendbuf) throws IOException {
         DatagramSocket sendSocket = new DatagramSocket();
         DatagramPacket sendPacket = new DatagramPacket(sendbuf, sendbuf.length, address, port);
         sendSocket.send(sendPacket);
