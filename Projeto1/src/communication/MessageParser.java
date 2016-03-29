@@ -15,19 +15,17 @@ public abstract class MessageParser {
     /* TODO <CRLF> */
     public abstract Message parse(byte [] messageBytes) throws IOException, MalformedMessageException;
     protected void splitMessage(byte[] messageBytes) throws IOException {
-        InputStream in = new ByteArrayInputStream(messageBytes);
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
+        InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(messageBytes));
+        BufferedReader bufferedReader = new BufferedReader(in);
         header = bufferedReader.readLine().trim().replaceAll("\\s+", " ").split(" ");
-        bufferedReader.skip(1);
-
-        byte [] buffer = new byte [64 * 1024];
-        int size = in.read(buffer);
-
+        bufferedReader.readLine();
+        char [] buffer = new char [64 * 1024];
+        int size = bufferedReader.read(buffer, 0, buffer.length);
         if (size == -1) {
             body = new byte[] {};
         } else {
             body = new byte[size];
-            System.arraycopy(buffer, 0, body, 0, size);
+            System.arraycopy(new String(buffer).getBytes("UTF-8"), 0, body, 0, body.length);
         }
     }
 

@@ -27,14 +27,15 @@ public class MulticastListener implements Runnable {
             try {
                 subProtocolListener.processMessage(message);
                 return;
-            } catch (MalformedMessageException ignored){}
+            } catch (MalformedMessageException ignored){
+                ignored.printStackTrace();
+            }
         }
         throw new MalformedMessageException("Unrecognized protocol name");
     }
 
     @Override
     public void run() {
-        System.out.println(Thread.currentThread().getName());
         byte[] buf = new byte[255+64*1024];
         DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
         while(true){
@@ -44,6 +45,7 @@ public class MulticastListener implements Runnable {
                 dispatchMessage(message);
 
             } catch (IOException | MalformedMessageException e) {
+                e.printStackTrace();
                Logger.getInstance().printLog("Unrecognized protocol name");
             }
         }

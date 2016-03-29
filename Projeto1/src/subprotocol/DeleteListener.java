@@ -14,6 +14,10 @@ import java.io.IOException;
 public class DeleteListener extends SubProtocolListener {
     private static final DeleteMessage.Parser parser = new DeleteMessage.Parser();
 
+    public DeleteListener(String localId) {
+        super(localId);
+    }
+
     public void processMessage(byte[] args) throws IOException, MalformedMessageException {
         Message msg = parser.parse(args);
         Logger.getInstance().printLog(msg.getHeader());

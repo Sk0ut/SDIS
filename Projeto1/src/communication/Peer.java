@@ -6,6 +6,7 @@ import subprotocol.GetChunkListener;
 import subprotocol.PutChunkListener;
 import subprotocol.RemovedListener;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
@@ -29,6 +30,7 @@ public class Peer {
         this.mdbAddress = new InetSocketAddress(mdbAddress, mdbPort);
         this.mdrAddress = new InetSocketAddress(mdrAddress, mdrPort);
         Peer.senderId = id;
+        new File("peer"+ id).mkdir();
     }
 
     public void start() {
@@ -43,18 +45,17 @@ public class Peer {
             receiveSocketMdr.setTimeToLive(1);
             receiveSocketMdb.setTimeToLive(1);
 
-
             mcListener = new MulticastListener(receiveSocketMc);
             mdbListener = new MulticastListener(receiveSocketMdb);
             mdrListener = new MulticastListener(receiveSocketMdr);
-            mcListener.addSubProtocol(new PutChunkListener());
-            mcListener.addSubProtocol(new GetChunkListener());
-            mcListener.addSubProtocol(new RemovedListener());
-            mcListener.addSubProtocol(new DeleteListener());
+            mcListener.addSubProtocol(new PutChunkListener("" + senderId));
+            mcListener.addSubProtocol(new GetChunkListener("" + senderId));
+            mcListener.addSubProtocol(new RemovedListener("" + senderId));
+            mcListener.addSubProtocol(new DeleteListener("" + senderId));
 
             new Thread(mcListener).start();
-            new Thread(mdbListener).start();
-            new Thread(mdrListener).start();
+            /*new Thread(mdbListener).start();
+            new Thread(mdrListener).start();*/
         } catch (IOException e) {
             e.printStackTrace();
         }

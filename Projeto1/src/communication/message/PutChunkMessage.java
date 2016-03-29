@@ -18,6 +18,7 @@ public class PutChunkMessage extends Message {
         @Override
         public Message parse(byte[] messageBytes) throws IOException, MalformedMessageException {
             splitMessage(messageBytes);
+
             if (header.length != 6)
                 throw new MalformedMessageException("Wrong number of arguments for the PUTCHUNK message: 5 arguments must be present");
 
