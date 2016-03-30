@@ -15,32 +15,26 @@ import java.net.MulticastSocket;
  * Created by afonso on 26-03-2016.
  */
 public class Peer {
-
-    private InetSocketAddress mcAddress;
-    private InetSocketAddress mdbAddress;
-    private InetSocketAddress mdrAddress;
-
     MulticastListener mcListener;
     MulticastListener mdbListener;
     MulticastListener mdrListener;
     public static int senderId;
 
     public Peer(int id, String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress, int mdrPort) throws IOException {
-        this.mcAddress = new InetSocketAddress(mcAddress, mcPort);
-        this.mdbAddress = new InetSocketAddress(mdbAddress, mdbPort);
-        this.mdrAddress = new InetSocketAddress(mdrAddress, mdrPort);
+        ChannelManager.getInstance().init(new InetSocketAddress(mcAddress, mcPort),
+                new InetSocketAddress(mdbAddress, mdbPort), new InetSocketAddress(mdrAddress, mdrPort));
         Peer.senderId = id;
         new File("peer"+ id).mkdir();
     }
 
     public void start() {
         try {
-            MulticastSocket receiveSocketMc = new MulticastSocket(mcAddress.getPort());
-            MulticastSocket receiveSocketMdb = new MulticastSocket(mdbAddress.getPort());
-            MulticastSocket receiveSocketMdr = new MulticastSocket(mdrAddress.getPort());
-            receiveSocketMc.joinGroup(mcAddress.getAddress());
-            receiveSocketMdb.joinGroup(mdbAddress.getAddress());
-            receiveSocketMdr.joinGroup(mdrAddress.getAddress());
+            MulticastSocket receiveSocketMc = new MulticastSocket(ChannelManager.getInstance().getMcAddress().getPort());
+            MulticastSocket receiveSocketMdb = new MulticastSocket(ChannelManager.getInstance().getMdbAddress().getPort());
+            MulticastSocket receiveSocketMdr = new MulticastSocket(ChannelManager.getInstance().getMdrAddress().getPort());
+            receiveSocketMc.joinGroup(ChannelManager.getInstance().getMcAddress().getAddress());
+            receiveSocketMdb.joinGroup(ChannelManager.getInstance().getMdbAddress().getAddress());
+            receiveSocketMdr.joinGroup(ChannelManager.getInstance().getMdrAddress().getAddress());
             receiveSocketMc.setTimeToLive(1);
             receiveSocketMdr.setTimeToLive(1);
             receiveSocketMdb.setTimeToLive(1);
@@ -59,17 +53,5 @@ public class Peer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public InetSocketAddress getMcAddress() {
-        return mcAddress;
-    }
-
-    public InetSocketAddress getMdbAddress() {
-        return mdbAddress;
-    }
-
-    public InetSocketAddress getMdrAddress() {
-        return mdrAddress;
     }
 }

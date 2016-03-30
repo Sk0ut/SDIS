@@ -2,10 +2,10 @@ package subprotocol;
 
 import communication.Message;
 import communication.message.DeleteMessage;
-import general.Logger;
 import general.MalformedMessageException;
 import general.SubProtocolListener;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -20,6 +20,10 @@ public class DeleteListener extends SubProtocolListener {
 
     public void processMessage(byte[] args) throws IOException, MalformedMessageException {
         Message msg = parser.parse(args);
-        Logger.getInstance().printLog(msg.getHeader());
+        String fileName = "peer" + getLocalId() + "/" + msg.getFileId() + "-" + msg.getChunkNo() + ".chunk";
+        File f = new File(fileName);
+        if (f.exists() && !f.isDirectory()) {
+            f.delete();
+        }
     }
 }
