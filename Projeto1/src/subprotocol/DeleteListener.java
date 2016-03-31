@@ -4,12 +4,11 @@ import communication.Message;
 import communication.message.DeleteMessage;
 import general.Logger;
 import general.MalformedMessageException;
-import general.MetadataFile;
+import general.ChunksMetadataManager;
 import general.SubProtocolListener;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.stream.IntStream;
 
 /**
  * Created by afonso on 26-03-2016.
@@ -27,6 +26,7 @@ public class DeleteListener extends SubProtocolListener {
 
         System.out.println(fileName);
         File f = new File(fileName);
+        ChunksMetadataManager.getInstance().removeFileIfExists(msg.getFileId(), msg.getChunkNo());
         if (f.exists() && !f.isDirectory()) {
             f.delete();
         }

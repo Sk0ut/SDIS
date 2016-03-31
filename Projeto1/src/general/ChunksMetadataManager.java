@@ -13,14 +13,17 @@ import java.util.Objects;
 /**
  * Created by Afonso on 31/03/2016.
  */
-public class MetadataFile {
-    class File {
+public class ChunksMetadataManager {
+
+    private static final String CHUNKS_METADATA_FILENAME = "chunks.metadata";
+
+    private class Metadata {
         String fileId;
         String chunkNo;
         String repDegree;
         List<String> peers;
 
-        public File(String fileId, String chunkNo, String repDegree, List<String> peers) {
+        Metadata(String fileId, String chunkNo, String repDegree, List<String> peers) {
             this.fileId = fileId;
             this.chunkNo = chunkNo;
             this.repDegree = repDegree;
@@ -28,22 +31,22 @@ public class MetadataFile {
         }
     }
 
-    private List<File> metadata;
+    private List<Metadata> metadata;
     private Path path;
-    private static MetadataFile instance = null;
+    private static ChunksMetadataManager instance = null;
 
-    private MetadataFile(){
+    private ChunksMetadataManager(){
         metadata = new ArrayList<>();
     }
 
-    public static MetadataFile getInstance(){
+    public static ChunksMetadataManager getInstance(){
         if (instance == null)
-            instance = new MetadataFile();
+            instance = new ChunksMetadataManager();
         return instance;
     }
 
     public void init(String localId){
-        this.path = FileSystems.getDefault().getPath("peer" + localId, ".metadata");
+        this.path = FileSystems.getDefault().getPath("peer" + localId, CHUNKS_METADATA_FILENAME);
         getMetadata();
     }
 
@@ -60,7 +63,7 @@ public class MetadataFile {
         }
     }
 
-    private void writeFileMetadata(File file) {
+    private void writeFileMetadata(Metadata file) {
         String line = file.fileId + " " + file.chunkNo + " " + file.repDegree;
         for (String s : file.peers){
             line += " " + s;
@@ -72,8 +75,8 @@ public class MetadataFile {
         }
     }
 
-    private File findChunk(String fileId, String chunkNo){
-        for(File f : metadata){
+    private Metadata findChunk(String fileId, String chunkNo){
+        for(Metadata f : metadata){
             if (Objects.equals(f.fileId, fileId) && Objects.equals(f.chunkNo, chunkNo))
                 return f;
         }
@@ -87,11 +90,11 @@ public class MetadataFile {
         String repDegree = elements[2];
         List<String> senders = new ArrayList<>();
         senders.addAll(Arrays.asList(elements).subList(3, elements.length));
-        metadata.add(new File(fileId, chunkNo, repDegree, senders));
+        metadata.add(new Metadata(fileId, chunkNo, repDegree, senders));
     }
 
     public void removeFileIfExists(String fileId, String chunkNo) throws IOException {
-        File f = findChunk(fileId, chunkNo);
+        Metadata f = findChunk(fileId, chunkNo);
         if (f != null){
             metadata.remove(f);
             saveMetadata();
@@ -99,7 +102,7 @@ public class MetadataFile {
     }
 
     public void removePeerIfExists(String fileId, String chunkNo, String peer) throws IOException {
-        File f = findChunk(fileId, chunkNo);
+        Metadata f = findChunk(fileId, chunkNo);
         if (f != null){
             if(f.peers.contains(peer)) {
                 f.peers.remove(peer);
@@ -109,7 +112,7 @@ public class MetadataFile {
     }
 
     public void addPeerIfNotExists(String fileId, String chunkNo, String peer) throws IOException {
-        File f = findChunk(fileId, chunkNo);
+        Metadata f = findChunk(fileId, chunkNo);
         if (f == null){
             if(!f.peers.contains(peer)) {
                 f.peers.add(peer);
@@ -119,9 +122,9 @@ public class MetadataFile {
     }
 
     public void addFileIfNotExists(String fileId, String chunkNo, String replicationDeg, List<String> peers) throws IOException {
-        File f = findChunk(fileId, chunkNo);
+        Metadata f = findChunk(fileId, chunkNo);
         if (f == null){
-            metadata.add(new File(fileId, chunkNo, replicationDeg, peers));
+            metadata.add(new Metadata(fileId, chunkNo, replicationDeg, peers));
             saveMetadata();
         }
     }

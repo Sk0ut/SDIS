@@ -39,7 +39,7 @@ public class GetChunkMessage extends Message {
 
             /* Validate file ID */
             if (!validFileId(headerLine[3])){
-                throw new MalformedMessageException("File ID must be hashed with the SHA-256 cryptographic function");
+                throw new MalformedMessageException("Metadata ID must be hashed with the SHA-256 cryptographic function");
             }
             
             /* Validate chunk No */
