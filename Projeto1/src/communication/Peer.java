@@ -1,5 +1,6 @@
 package communication;
 
+import general.MetadataFile;
 import general.MulticastListener;
 import subprotocol.DeleteListener;
 import subprotocol.GetChunkListener;
@@ -23,8 +24,12 @@ public class Peer {
     public Peer(int id, String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress, int mdrPort) throws IOException {
         ChannelManager.getInstance().init(new InetSocketAddress(mcAddress, mcPort),
                 new InetSocketAddress(mdbAddress, mdbPort), new InetSocketAddress(mdrAddress, mdrPort));
+        MetadataFile.getInstance().init("" + id);
         Peer.senderId = id;
         new File("peer"+ id).mkdir();
+        File metadata = new File("peer"+id+"/.metadata");
+        if(!metadata.exists())
+            metadata.createNewFile();
     }
 
     public void start() {

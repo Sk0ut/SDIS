@@ -1,6 +1,7 @@
 package communication;
 
 import communication.message.DeleteMessage;
+import communication.message.PutChunkMessage;
 
 import java.io.IOException;
 
@@ -18,8 +19,11 @@ public class Sender implements Runnable {
         byte[] message = new DeleteMessage(Integer.toString(Peer.senderId),
                 "46070d4bf934fb0d4b06d9e2c46e346944e322444900a435d7d9a95e6d7435f5").getBytes();
         try {
-            ChannelManager.getInstance().send(ChannelManager.ChannelType.CONTROLCHANNEL, message);
-        } catch (IOException e) {
+            while(true) {
+                Thread.sleep(1000);
+                ChannelManager.getInstance().send(ChannelManager.ChannelType.CONTROLCHANNEL, message);
+            }
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
