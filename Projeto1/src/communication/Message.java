@@ -1,6 +1,7 @@
 package communication;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
 
 /**
@@ -14,6 +15,10 @@ public abstract class Message {
     private String chunkNo;
     private String replicationDeg;
     private byte [] body;
+    public final static byte CR = 0x0D;
+    public final static byte LF = 0x0A;
+    public final static String CRLF = new String(new byte[]{CR, LF}, StandardCharsets.US_ASCII);
+
 
     public Message(String messageType, String version, String senderId, String fileId, String chunkNo, String replicationDeg, byte [] body) {
         setMessageType(messageType);
@@ -27,11 +32,8 @@ public abstract class Message {
 
     public byte [] getBytes() {
         byte [] headerBytes = new byte[0];
-        try {
-            headerBytes = getHeader().concat("\n\n").getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        headerBytes = getHeader().concat(CRLF).getBytes(StandardCharsets.US_ASCII);
+
         byte [] bytes = new byte[headerBytes.length + body.length];
         System.arraycopy(headerBytes, 0, bytes, 0, headerBytes.length);
         System.arraycopy(body, 0, bytes, headerBytes.length, body.length);
@@ -40,7 +42,7 @@ public abstract class Message {
     }
 
     public String getHeader() {
-        StringJoiner sj = new StringJoiner(" ");
+        StringJoiner sj = new StringJoiner(" ", "", CRLF);
         sj.add(messageType)
                 .add(version)
                 .add(senderId)
