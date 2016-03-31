@@ -27,7 +27,7 @@ public class GetChunkListener extends SubProtocolListener {
         File f = new File(fileName);
         if(f.exists() && !f.isDirectory()){
             BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
-            char[] buffer = new char[64*1024];
+            char[] buffer =  new char[64*1024];
             br.read(buffer, 0, buffer.length);
             Logger.getInstance().printLog(msg.getHeader());
             try {
@@ -39,7 +39,5 @@ public class GetChunkListener extends SubProtocolListener {
                     new String(buffer).getBytes("UTF-8")).getBytes();
             ChannelManager.getInstance().send(ChannelManager.ChannelType.DATARESTORECHANNEL, message);
         }
-
-
     }
 }

@@ -11,13 +11,10 @@ public abstract class SubProtocolListener {
     public SubProtocolListener(String localId) {
         this.localId = localId;
     }
-
     public abstract void processMessage(byte[] args) throws MalformedMessageException, IOException;
-
     public String getLocalId() {
         return localId;
     }
-
     public void setLocalId(String localId) {
         this.localId = localId;
     }
