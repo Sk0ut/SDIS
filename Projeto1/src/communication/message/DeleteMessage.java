@@ -19,21 +19,26 @@ public class DeleteMessage extends Message {
         public Message parse(byte[] messageBytes) throws IOException, MalformedMessageException {
             splitMessage(messageBytes);
 
-            if (header.length != 4)
+            if (header.size() != 1)
+                throw new MalformedMessageException("Wrong number of lines for subprotocol " + IDENTIFIER + " version " + VERSION);
+
+            String[] headerLine = header.get(0);
+
+            if (headerLine.length != 4)
                 throw new MalformedMessageException("Wrong number of arguments for the DELETE protocol: 3 arguments must be present");
 
-            if (!header[0].equalsIgnoreCase(IDENTIFIER))
+            if (!headerLine[0].equalsIgnoreCase(IDENTIFIER))
                 throw new MalformedMessageException("Wrong protocol");
 
             /* Validate version */
-            if (!header[1].equalsIgnoreCase(VERSION))
+            if (!headerLine[1].equalsIgnoreCase(VERSION))
                 throw new MalformedMessageException("Version must follow the following format: <n>.<m>");
 
-            if (!validSenderId(header[2]))
+            if (!validSenderId(headerLine[2]))
                 throw new MalformedMessageException("Sender ID must be an Integer");
 
             /* Validate file ID */
-            if (!validFileId(header[3])){
+            if (!validFileId(headerLine[3])){
                 throw new MalformedMessageException("File ID must be hashed with the SHA-256 cryptographic function");
             }
 
@@ -41,7 +46,7 @@ public class DeleteMessage extends Message {
                 throw new MalformedMessageException("There must be no body present");
             }
 
-            return new DeleteMessage(header[2], header[3]);
+            return new DeleteMessage(headerLine[2], headerLine[3]);
         }
     }
 

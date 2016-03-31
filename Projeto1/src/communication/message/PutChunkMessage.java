@@ -19,35 +19,40 @@ public class PutChunkMessage extends Message {
         public Message parse(byte[] messageBytes) throws IOException, MalformedMessageException {
             splitMessage(messageBytes);
 
-            if (header.length != 6)
+            if (header.size() != 1)
+                throw new MalformedMessageException("Wrong number of lines for subprotocol " + IDENTIFIER + " version " + VERSION);
+
+            String[] headerLine = header.get(0);
+
+            if (headerLine.length != 6)
                 throw new MalformedMessageException("Wrong number of arguments for the PUTCHUNK message: 5 arguments must be present");
 
-            if (!header[0].equalsIgnoreCase(IDENTIFIER))
+            if (!headerLine[0].equalsIgnoreCase(IDENTIFIER))
                 throw new MalformedMessageException("Wrong protocol");
 
             /* Validate version */
-            if (!header[1].equalsIgnoreCase(VERSION))
+            if (!headerLine[1].equalsIgnoreCase(VERSION))
                 throw new MalformedMessageException("Version must follow the following format: <n>.<m>");
 
-            if (!validSenderId(header[2]))
+            if (!validSenderId(headerLine[2]))
                 throw new MalformedMessageException("Sender ID must be an Integer");
 
             /* Validate file ID */
-            if (!validFileId(header[3])){
+            if (!validFileId(headerLine[3])){
                 throw new MalformedMessageException("File ID must be hashed with the SHA-256 cryptographic function");
             }
             
             /* Validate chunk No */
-            if (!validChunkNo(header[4])){
+            if (!validChunkNo(headerLine[4])){
                 throw new MalformedMessageException("Chunk Number must be an integer smaller than 1000000");
             }
 
             /* Validate Replication Deg */
-            if(!validReplicationDeg(header[5])){
+            if(!validReplicationDeg(headerLine[5])){
                 throw new MalformedMessageException("Replication Degree must be a single digit");
             }
 
-            return new PutChunkMessage(header[2], header[3], header[4], header[5], body);
+            return new PutChunkMessage(headerLine[2], headerLine[3], headerLine[4], headerLine[5], body);
         }
     }
 

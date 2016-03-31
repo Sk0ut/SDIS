@@ -1,5 +1,7 @@
 package client;
 
+import communication.MessageParser;
+
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -54,13 +56,12 @@ public class TestApp {
 
 
     private void backup(String filePath, String replicationDegString) throws RemoteException {
-        if (!replicationDegString.matches("^\\d$"))
+        if (!MessageParser.validReplicationDeg(replicationDegString))
             throw new IllegalArgumentException("BACKUP replication degree must be a single digit integer");
 
         final int replicationDeg = Integer.parseInt(replicationDegString);
 
-        // get info from file to send to Peer through RMI service
-        service.backup(filePath);
+        service.backup(filePath, replicationDeg);
     }
 
     private void restore(String filename) throws RemoteException {

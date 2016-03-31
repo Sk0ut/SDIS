@@ -4,6 +4,7 @@ import communication.Message;
 import communication.MessageParser;
 import general.MalformedMessageException;
 
+import javax.naming.MalformedLinkException;
 import java.io.*;
 
 /**
@@ -18,30 +19,34 @@ public class ChunkMessage extends Message {
         @Override
         public Message parse(byte[] messageBytes) throws IOException, MalformedMessageException {
             splitMessage(messageBytes);
-            if (header.length != 5)
+
+            if (header.size() != 1)
+                throw new MalformedMessageException("Wrong number of lines for subprotocol " + IDENTIFIER + " version " + VERSION);
+
+            String[] headerLine = header.get(0);
+
+            if (headerLine.length != 5)
                 throw new MalformedMessageException("Wrong number of arguments for the CHUNK message: 4 arguments must be present");
 
-            if (!header[0].equalsIgnoreCase(IDENTIFIER))
+            if (!headerLine[0].equalsIgnoreCase(IDENTIFIER))
                 throw new MalformedMessageException("Wrong protocol");
 
             /* Validate version */
-            if (!header[1].equalsIgnoreCase(VERSION))
+            if (!headerLine[1].equalsIgnoreCase(VERSION))
                 throw new MalformedMessageException("Version must follow the following format: <n>.<m>");
 
-            if (!validSenderId(header[2]))
+            if (!validSenderId(headerLine[2]))
                 throw new MalformedMessageException("Sender ID must be an Integer");
 
             /* Validate file ID */
-            if (!validFileId(header[3])){
+            if (!validFileId(headerLine[3]))
                 throw new MalformedMessageException("File ID must be hashed with the SHA-256 cryptographic function");
-            }
             
             /* Validate chunk No */
-            if (!validChunkNo(header[4])){
+            if (!validChunkNo(headerLine[4]))
                 throw new MalformedMessageException("Chunk Number must be an integer smaller than 1000000");
-            }
 
-            return new ChunkMessage(header[2], header[3], header[4], body);
+            return new ChunkMessage(headerLine[2], headerLine[3], headerLine[4], body);
         }
     }
 

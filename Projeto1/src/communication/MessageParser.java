@@ -3,22 +3,29 @@ package communication;
 import general.MalformedMessageException;
 
 import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by Flávio on 29/03/2016.
  */
 public abstract class MessageParser {
 
-    protected String[] header;
+    protected List<String[]> header;
     protected byte[] body;
 
-    /* TODO <CRLF> */
+
     public abstract Message parse(byte [] messageBytes) throws IOException, MalformedMessageException;
     protected void splitMessage(byte[] messageBytes) throws IOException {
         InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(messageBytes));
         BufferedReader bufferedReader = new BufferedReader(in);
-        header = bufferedReader.readLine().trim().replaceAll("\\s+", " ").split(" ");
-        bufferedReader.readLine();
+        header = new LinkedList<>();
+        String headerLine = bufferedReader.readLine();
+        while (!headerLine.isEmpty()){
+            header.add(headerLine.trim().replaceAll("\\s+", " ").split(" "));
+            headerLine = bufferedReader.readLine();
+        }
+
         char [] buffer = new char [64 * 1024];
         int size = bufferedReader.read(buffer, 0, buffer.length);
         if (size == -1) {
@@ -29,23 +36,23 @@ public abstract class MessageParser {
         }
     }
 
-    protected boolean validVersion(String version) {
+    public static boolean validVersion(String version) {
         return version.matches("^\\d.\\d$");
     }
 
-    protected boolean validSenderId(String senderId) {
+    public static boolean validSenderId(String senderId) {
         return senderId.matches("^\\d+$");
     }
 
-    protected boolean validFileId(String fileId) {
+    public static boolean validFileId(String fileId) {
         return fileId.matches("^[0-9a-fA-F]{64}$");
     }
 
-    protected boolean validChunkNo(String chunkNo) {
+    public static boolean validChunkNo(String chunkNo) {
         return chunkNo.matches("^\\d{0,6}$");
     }
 
-    protected boolean validReplicationDeg(String replicationDeg) {
+    public static boolean validReplicationDeg(String replicationDeg) {
         return replicationDeg.matches("^\\d$");
     }
 }
