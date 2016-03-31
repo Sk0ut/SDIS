@@ -1,5 +1,6 @@
 package communication;
 
+import client.BackupService;
 import general.ChunksMetadataManager;
 import general.FilesMetadataManager;
 import general.MulticastListener;
@@ -12,11 +13,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
 /**
  * Created by afonso on 26-03-2016.
  */
-public class Peer {
+public class Peer implements BackupService{
     MulticastListener mcListener;
     MulticastListener mdbListener;
     MulticastListener mdrListener;
@@ -25,20 +31,25 @@ public class Peer {
     public Peer(int id, String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress, int mdrPort) throws IOException {
         ChannelManager.getInstance().init(new InetSocketAddress(mcAddress, mcPort),
                 new InetSocketAddress(mdbAddress, mdbPort), new InetSocketAddress(mdrAddress, mdrPort));
-        ChunksMetadataManager.getInstance().init("" + id);
-        FilesMetadataManager.getInstance().init("" + id);
         Peer.senderId = id;
         new File("peer"+ id).mkdir();
-        File chunkMetadata = new File("peer"+id+"/chunks.metadata");
+        File chunkMetadata = new File("peer"+id+File.separator + "chunks.metadata");
         if(!chunkMetadata.exists())
             chunkMetadata.createNewFile();
-        File fileMetadata = new File("peer"+id+"/files.metadata");
+        File fileMetadata = new File("peer"+id+File.separator + "files.metadata");
         if(!fileMetadata.exists())
             fileMetadata.createNewFile();
+        ChunksMetadataManager.getInstance().init("" + id);
+        FilesMetadataManager.getInstance().init("" + id);
     }
 
     public void start() {
         try {
+            /*
+            BackupService service = (BackupService) UnicastRemoteObject.exportObject(this, 0);
+            Registry registry = LocateRegistry.getRegistry();
+            registry.bind(Integer.toString(senderId), service);
+            */
             MulticastSocket receiveSocketMc = new MulticastSocket(ChannelManager.getInstance().getMcAddress().getPort());
             MulticastSocket receiveSocketMdb = new MulticastSocket(ChannelManager.getInstance().getMdbAddress().getPort());
             MulticastSocket receiveSocketMdr = new MulticastSocket(ChannelManager.getInstance().getMdrAddress().getPort());
@@ -63,5 +74,25 @@ public class Peer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void backup(String filepath, int replicationDeg) throws RemoteException {
+
+    }
+
+    @Override
+    public void restore(String filename) throws RemoteException {
+
+    }
+
+    @Override
+    public void delete(String filename) throws RemoteException {
+
+    }
+
+    @Override
+    public void reclaim(long space) throws RemoteException {
+
     }
 }
