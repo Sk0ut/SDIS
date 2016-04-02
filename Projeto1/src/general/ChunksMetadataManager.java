@@ -101,6 +101,14 @@ public class ChunksMetadataManager {
         }
     }
 
+    public List<String> getChunksFromFile(String fileId) {
+        List<String> ret = new ArrayList<>();
+        for(Metadata m : metadata)
+            if (Objects.equals(m.fileId, fileId))
+                ret.add(m.chunkNo);
+        return ret;
+    }
+
     public void removePeerIfExists(String fileId, String chunkNo, String peer) throws IOException {
         Metadata f = findChunk(fileId, chunkNo);
         if (f != null){

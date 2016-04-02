@@ -16,9 +16,9 @@ import java.rmi.RemoteException;
  * Created by afonso on 26-03-2016.
  */
 public class Peer implements BackupService{
-    MulticastListener mcListener;
-    MulticastListener mdbListener;
-    MulticastListener mdrListener;
+    private MulticastListener mcListener;
+    private MulticastListener mdbListener;
+    private MulticastListener mdrListener;
     public static int localId;
 
     public Peer(int id, String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress, int mdrPort) throws IOException {
@@ -103,6 +103,6 @@ public class Peer implements BackupService{
 
     @Override
     public void reclaim(long space) throws RemoteException {
-
+        ReclaimInitiator ri = new ReclaimInitiator(space, "" + localId);
     }
 }
