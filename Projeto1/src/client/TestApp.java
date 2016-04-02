@@ -24,7 +24,7 @@ public class TestApp {
 
     public void connect() throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry();
-        service = (BackupService) registry.lookup(peerAP);
+        service = (BackupService) registry.lookup("rmi://localhost/" + peerAP);
     }
 
     public void execute(String subProtocol, String opnd1, String opnd2) throws RemoteException {

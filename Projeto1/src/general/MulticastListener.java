@@ -23,7 +23,6 @@ public class MulticastListener implements Runnable {
     }
 
     public void dispatchMessage(byte[] message) throws MalformedMessageException, IOException {
-
         for (SubProtocolListener subProtocolListener : subProtocolListeners) {
             try {
                 subProtocolListener.processMessage(message);
