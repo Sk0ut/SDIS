@@ -6,14 +6,11 @@ import communication.message.ChunkMessage;
 import communication.message.GetChunkMessage;
 import general.FilesMetadataManager;
 import general.MalformedMessageException;
-import general.MulticastChannelManager;
+import general.MulticastChannel;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -24,34 +21,32 @@ import java.util.stream.IntStream;
  * Created by Afonso on 02/04/2016.
  */
 public class RestoreInitiator implements Observer {
-    private static final int MAXCHUNKSIZE = 64 * 1024;
-    private final MulticastChannelManager mcChannel;
-    private final MulticastChannelManager mdrChannel;
+    private static final int MAXCHUNKSIZE = 64 * 1000;
+    private final MulticastChannel mcChannel;
+    private final MulticastChannel mdrChannel;
     private final String filePath;
     private final String fileId;
-    private final String lastModified;
     private final String localId;
     private final List<Integer> chunksToReceive;
     private RandomAccessFile file;
 
-    public RestoreInitiator(String filePath, String localId, MulticastChannelManager mcChannel, MulticastChannelManager mdrChannel) throws IOException {
+    public RestoreInitiator(String filePath, String localId, MulticastChannel mcChannel, MulticastChannel mdrChannel) throws IOException {
         this.filePath = filePath;
         this.localId = localId;
         this.mcChannel = mcChannel;
         this.mdrChannel = mdrChannel;
         long fileSize = new File(filePath).length();
         int totalChunks = (int) (fileSize / MAXCHUNKSIZE) + 1;
-        this.lastModified = FilesMetadataManager.getInstance().getFileId(filePath);
         this.chunksToReceive = IntStream.range(0, totalChunks).boxed().collect(Collectors.toList());
         this.file = new RandomAccessFile(filePath, "w");
-        this.fileId = generateFileId();
+        this.fileId = FilesMetadataManager.getInstance().getFileId(filePath);
     }
 
     public void getChunks() throws IOException {
         while (true) {
             mdrChannel.addObserver(this);
             for (int i : chunksToReceive) {
-                byte[] message = new GetChunkMessage(localId, generateFileId(), "" + i).getBytes();
+                byte[] message = new GetChunkMessage(localId, fileId, "" + i).getBytes();
                 mcChannel.send(message);
             }
             try {
@@ -63,19 +58,6 @@ public class RestoreInitiator implements Observer {
             if (chunksToReceive.size() == 0)
                 break;
         }
-    }
-
-    private String generateFileId() {
-        try {
-            String hashable = filePath + lastModified;
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            md.update(hashable.getBytes("UTF-8"));
-            byte[] digest = md.digest();
-            return new String(digest);
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     @Override

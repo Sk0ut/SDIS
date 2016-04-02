@@ -1,10 +1,8 @@
 package general;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -14,25 +12,28 @@ import java.util.Objects;
  */
 public class FilesMetadataManager {
 
-    private class Metadata {
+    private class Entry {
         String filePath;
         String modificationDate;
         String fileId;
         int numChunks;
 
-        Metadata(String filePath, String date, String fileId, int numChunks) {
+        Entry(String filePath, String date, String fileId, int numChunks) {
             this.filePath = filePath;
             this.modificationDate = date;
             this.fileId = fileId;
             this.numChunks = numChunks;
         }
+
+        public String toString() {
+            return filePath + " " + modificationDate + " " + fileId + " " + numChunks;
+        }
     }
 
     private static FilesMetadataManager instance = null;
     private static final String FILES_METADATA_FILENAME = "files.metadata";
-    private List<Metadata> metadata;
-    private Path path;
-
+    private List<Entry> metadata;
+    private File file;
     private FilesMetadataManager(){
         metadata = new ArrayList<>();
     }
@@ -43,31 +44,31 @@ public class FilesMetadataManager {
         return instance;
     }
 
-    public void init(String localId){
-        this.path = FileSystems.getDefault().getPath("peer" + localId, FILES_METADATA_FILENAME);
-        getMetadata();
+    public void init(String localId) throws IOException {
+        Path path = FileSystems.getDefault().getPath("peer" + localId, FILES_METADATA_FILENAME);
+        file = path.toFile();
+        load();
     }
 
-    private void getMetadata() {
+    private void load() throws FileNotFoundException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         try {
-            Files.lines(path).forEach(this::parseLine);
+            String line;
+            while((line = br.readLine()) != null) {
+                parseLine(line);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void saveMetadata() throws IOException {
-        Files.deleteIfExists(path);
-        metadata.forEach(this::writeFileMetadata);
-    }
-
-    private void writeFileMetadata(Metadata file) {
-        String line = file.filePath + " " + file.modificationDate + " " + file.fileId + " " + file.numChunks;
-        try {
-            Files.write(path, line.getBytes(), StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void save() throws IOException {
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+        for(Entry m : metadata){
+            bw.write(m.toString());
+            bw.newLine();
         }
+        bw.close();
     }
 
     private void parseLine(String line) {
@@ -76,11 +77,11 @@ public class FilesMetadataManager {
         String modificationDate = elements[1];
         String fileId = elements[2];
         int numChunks = Integer.parseInt(elements[3]);
-        metadata.add(new Metadata(filePath, modificationDate, fileId, numChunks));
+        metadata.add(new Entry(filePath, modificationDate, fileId, numChunks));
     }
 
-    private Metadata findFile(String filePath) {
-        for (Metadata m : metadata){
+    private Entry findFile(String filePath) {
+        for (Entry m : metadata){
             if(Objects.equals(m.filePath, filePath))
                 return m;
         }
@@ -88,23 +89,23 @@ public class FilesMetadataManager {
     }
 
     public void addIfNotExists(String filePath, String date, String fileId, int numChunks) throws IOException {
-        Metadata m = findFile(filePath);
+        Entry m = findFile(filePath);
         if (m == null) {
-            metadata.add(new Metadata(filePath, date, fileId, numChunks));
-            saveMetadata();
+            metadata.add(new Entry(filePath, date, fileId, numChunks));
+            save();
         }
     }
 
     public void removeIfExists(String filePath) throws IOException {
-        Metadata m = findFile(filePath);
+        Entry m = findFile(filePath);
         if(m != null){
             metadata.remove(m);
-            saveMetadata();
+            save();
         }
     }
 
     public String getFileId(String filePath){
-        Metadata m = findFile(filePath);
+        Entry m = findFile(filePath);
         if(m != null){
             return m.fileId;
         }

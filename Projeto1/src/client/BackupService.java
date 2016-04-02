@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
  */
 public interface BackupService extends Remote {
     void backup(String filepath, int replicationDeg) throws RemoteException;
-    void restore(String filename) throws RemoteException;
-    void delete(String filename) throws RemoteException;
+    void restore(String filepath) throws RemoteException;
+    void delete(String filepath) throws RemoteException;
     void reclaim(long space) throws RemoteException;
 }

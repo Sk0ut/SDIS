@@ -1,5 +1,6 @@
 package general;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -45,8 +46,11 @@ public class ChunksMetadataManager {
         return instance;
     }
 
-    public void init(String localId){
+    public void init(String localId) throws IOException {
         this.path = FileSystems.getDefault().getPath("peer" + localId, CHUNKS_METADATA_FILENAME);
+        File fileMetadata = path.toFile();
+        if(!fileMetadata.exists())
+            fileMetadata.createNewFile();
         getMetadata();
     }
 

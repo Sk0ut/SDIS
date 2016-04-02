@@ -2,7 +2,7 @@ package subprotocol;
 
 import communication.message.DeleteMessage;
 import general.FilesMetadataManager;
-import general.MulticastChannelManager;
+import general.MulticastChannel;
 
 import java.io.IOException;
 
@@ -15,9 +15,9 @@ public class DeleteInitiator {
     private String fileId;
     private String localId;
     private String filePath;
-    private MulticastChannelManager mcChannel;
+    private MulticastChannel mcChannel;
 
-    public DeleteInitiator(String filename, String localId, MulticastChannelManager mcChannel){
+    public DeleteInitiator(String filename, String localId, MulticastChannel mcChannel){
         fileId = FilesMetadataManager.getInstance().getFileId(filename);
         this.localId = localId;
         this.filePath = filename;

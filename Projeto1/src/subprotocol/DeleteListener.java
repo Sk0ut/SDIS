@@ -13,11 +13,17 @@ import java.util.Observer;
 /**
  * Created by afonso on 26-03-2016.
  */
-public class DeleteListener extends SubProtocolListener implements Observer {
+public class DeleteListener extends Subprotocol implements Observer {
     private static final DeleteMessage.Parser parser = new DeleteMessage.Parser();
+    private MulticastChannel mc;
 
-    public DeleteListener(String localId, MulticastChannelManager mcm) {
-        super(localId, mcm);
+    public DeleteListener(String localId, MulticastChannel mc) {
+        super(localId);
+        this.mc = mc;
+    }
+
+    public void start() {
+        mc.addObserver(this);
     }
 
     @Override
