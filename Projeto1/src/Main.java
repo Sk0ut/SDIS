@@ -1,5 +1,4 @@
 import communication.Peer;
-import communication.Sender;
 
 import java.io.IOException;
 
@@ -18,9 +17,6 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Peer peer = new Peer(SENDERID, INET_ADDR_MC, PORT_MC, INET_ADDR_MDB, PORT_MDB, INET_ADDR_MDR, PORT_MDR);
-        new Thread(new Sender()).start();
-        //new Thread(new Sender(peer.getMdbAddress())).start();
-        //new Thread(new Sender(peer.getMdrAddress())).start();
         peer.start();
     }
 }

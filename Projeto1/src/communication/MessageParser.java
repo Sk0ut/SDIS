@@ -2,7 +2,7 @@ package communication;
 
 import general.MalformedMessageException;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
