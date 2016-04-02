@@ -24,7 +24,7 @@ public class TestApp {
 
     public void connect() throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry();
-        service = (BackupService) registry.lookup("rmi://localhost/" + peerAP);
+        service = (BackupService) registry.lookup("" + peerAP);
     }
 
     public void execute(String subProtocol, String opnd1, String opnd2) throws RemoteException {
@@ -74,7 +74,7 @@ public class TestApp {
     }
 
     private void reclaim(String spaceString) throws RemoteException {
-        if (!spaceString.matches("$\\d+$"))
+        if (!spaceString.matches("^\\d+$"))
             throw  new IllegalArgumentException("RECLAIM space must be an integer");
 
         final long space = Long.parseLong(spaceString);

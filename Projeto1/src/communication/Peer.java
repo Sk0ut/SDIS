@@ -10,7 +10,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
 /**
  * Created by afonso on 26-03-2016.
@@ -47,11 +52,18 @@ public class Peer implements BackupService{
     }
 
     public void start() {
-        /*
-        BackupService service = (BackupService) UnicastRemoteObject.exportObject(this, 0);
-        Registry registry = LocateRegistry.getRegistry();
-        registry.bind(Integer.toString(localId), service);
-        */
+
+        BackupService service = null;
+        Registry registry = null;
+
+        try {
+            service = (BackupService) UnicastRemoteObject.exportObject(this, 0);
+            registry = LocateRegistry.getRegistry();
+            registry.rebind(Integer.toString(localId), service);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
 
         mcChannel.addSubProtocol(new PutChunkListener("" + localId, mdbChannel));
         mcChannel.addSubProtocol(new GetChunkListener("" + localId, mcChannel));
@@ -61,6 +73,8 @@ public class Peer implements BackupService{
         new Thread(mcChannel).start();
         new Thread(mdbChannel).start();
         new Thread(mdrChannel).start();
+
+        while (true) ;
 
         /*try {
             backup("C:\\Users\\Afonso\\Desktop\\Faculdade\\2º Semestre\\SDIS\\Projeto1", 3);
