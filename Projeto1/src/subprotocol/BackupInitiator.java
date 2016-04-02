@@ -20,8 +20,8 @@ import java.util.stream.IntStream;
  */
 public class BackupInitiator implements Observer {
     private static final int MAXCHUNKSIZE = 64 * 1024;
-    private final MulticastChannelManager mcListener;
-    private final MulticastChannelManager mdbListener;
+    private final MulticastChannelManager mcChannel;
+    private final MulticastChannelManager mdbChannel;
 
     private String filePath;
     private int totalChunks;
@@ -34,8 +34,8 @@ public class BackupInitiator implements Observer {
         this.filePath = filePath;
         this.localId = localId;
         this.replicationDeg = replicationDeg;
-        this.mcListener = mcChannel;
-        this.mdbListener = mdbChannel;
+        this.mcChannel = mcChannel;
+        this.mdbChannel = mdbChannel;
         long fileSize = new File(filePath).length();
         totalChunks = (int)(fileSize / MAXCHUNKSIZE) + 1;
         chunksReplication = new HashMap<>();
@@ -54,18 +54,18 @@ public class BackupInitiator implements Observer {
             chunksBelowReplicationDeg = checkReplicationDeg();
             if (chunksBelowReplicationDeg.size() == 0)
                 break;
-            mcListener.addObserver(this);
+            mcChannel.addObserver(this);
             for (int i : chunksBelowReplicationDeg) {
                 in.read(buffer, i * MAXCHUNKSIZE, buffer.length);
                 message = new PutChunkMessage(localId, fileId, "" + i, "" + replicationDeg, buffer).getBytes();
-                mdbListener.send(message);
+                mdbChannel.send(message);
             }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            mcListener.deleteObserver(this);
+            mcChannel.deleteObserver(this);
         }
     }
 

@@ -23,8 +23,8 @@ import java.util.stream.IntStream;
  */
 public class RestoreInitiator implements Observer {
     private static final int MAXCHUNKSIZE = 64 * 1024;
-    private final MulticastChannelManager mcListener;
-    private final MulticastChannelManager mdrListener;
+    private final MulticastChannelManager mcChannel;
+    private final MulticastChannelManager mdrChannel;
     private final String filePath;
     private final String fileId;
     private final String lastModified;
@@ -35,8 +35,8 @@ public class RestoreInitiator implements Observer {
     public RestoreInitiator(String filePath, String localId, MulticastChannelManager mcChannel, MulticastChannelManager mdrChannel) throws IOException {
         this.filePath = filePath;
         this.localId = localId;
-        this.mcListener = mcChannel;
-        this.mdrListener = mdrChannel;
+        this.mcChannel = mcChannel;
+        this.mdrChannel = mdrChannel;
         long fileSize = new File(filePath).length();
         int totalChunks = (int) (fileSize / MAXCHUNKSIZE) + 1;
         this.lastModified = FilesMetadataManager.getInstance().getFileId(filePath);
@@ -47,17 +47,17 @@ public class RestoreInitiator implements Observer {
 
     public void getChunks() throws IOException {
         while (true) {
-            mdrListener.addObserver(this);
+            mdrChannel.addObserver(this);
             for (int i : chunksToReceive) {
                 byte[] message = new GetChunkMessage(localId, generateFileId(), "" + i).getBytes();
-                mcListener.send(message);
+                mcChannel.send(message);
             }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            mdrListener.deleteObserver(this);
+            mdrChannel.deleteObserver(this);
             if (chunksToReceive.size() == 0)
                 break;
         }
