@@ -1,17 +1,31 @@
 package general;
 
-import java.io.IOException;
+import com.sun.org.apache.xpath.internal.operations.Mult;
+
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  * Created by afonso on 26-03-2016.
  */
-public abstract class SubProtocolListener {
-    private String localId;
+public abstract class SubProtocolListener implements Observer {
+    protected String localId;
+    protected MulticastChannelManager mcm;
 
-    public SubProtocolListener(String localId) {
-        this.localId = localId;
+    public MulticastChannelManager getMcm() {
+        return mcm;
     }
-    public abstract void processMessage(byte[] args) throws MalformedMessageException, IOException;
+
+    public void setMcm(MulticastChannelManager mcm) {
+        this.mcm = mcm;
+    }
+
+    public SubProtocolListener(String localId, MulticastChannelManager mcm) {
+        this.localId = localId;
+        this.mcm = mcm;
+
+        mcm.addObserver(this);
+    }
     public String getLocalId() {
         return localId;
     }

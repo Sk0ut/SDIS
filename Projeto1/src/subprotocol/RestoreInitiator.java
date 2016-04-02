@@ -1,13 +1,12 @@
 package subprotocol;
 
-import communication.ChannelManager;
 import communication.Message;
 import communication.MessageParser;
 import communication.message.ChunkMessage;
 import communication.message.GetChunkMessage;
 import general.FilesMetadataManager;
 import general.MalformedMessageException;
-import general.MulticastListener;
+import general.MulticastChannelManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +23,8 @@ import java.util.stream.IntStream;
  */
 public class RestoreInitiator implements Observer {
     private static final int MAXCHUNKSIZE = 64 * 1024;
-    private final MulticastListener mcListener;
-    private final MulticastListener mdrListener;
+    private final MulticastChannelManager mcListener;
+    private final MulticastChannelManager mdrListener;
     private final String filePath;
     private final String fileId;
     private final String lastModified;
@@ -33,11 +32,11 @@ public class RestoreInitiator implements Observer {
     private final List<Integer> chunksToReceive;
     private RandomAccessFile file;
 
-    public RestoreInitiator(String filePath, String localId, MulticastListener mcListener, MulticastListener mdrListener) throws IOException {
+    public RestoreInitiator(String filePath, String localId, MulticastChannelManager mcChannel, MulticastChannelManager mdrChannel) throws IOException {
         this.filePath = filePath;
         this.localId = localId;
-        this.mcListener = mcListener;
-        this.mdrListener = mdrListener;
+        this.mcListener = mcChannel;
+        this.mdrListener = mdrChannel;
         long fileSize = new File(filePath).length();
         int totalChunks = (int) (fileSize / MAXCHUNKSIZE) + 1;
         this.lastModified = FilesMetadataManager.getInstance().getFileId(filePath);
@@ -51,7 +50,7 @@ public class RestoreInitiator implements Observer {
             mdrListener.addObserver(this);
             for (int i : chunksToReceive) {
                 byte[] message = new GetChunkMessage(localId, generateFileId(), "" + i).getBytes();
-                ChannelManager.getInstance().send(ChannelManager.ChannelType.CONTROLCHANNEL, message);
+                mcListener.send(message);
             }
             try {
                 Thread.sleep(1000);

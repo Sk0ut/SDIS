@@ -1,14 +1,13 @@
 package subprotocol;
 
 
-import communication.ChannelManager;
 import communication.Message;
 import communication.MessageParser;
 import communication.message.PutChunkMessage;
 import communication.message.StoredMessage;
 import general.FilesMetadataManager;
 import general.MalformedMessageException;
-import general.MulticastListener;
+import general.MulticastChannelManager;
 
 import java.io.*;
 import java.security.MessageDigest;
@@ -21,8 +20,8 @@ import java.util.stream.IntStream;
  */
 public class BackupInitiator implements Observer {
     private static final int MAXCHUNKSIZE = 64 * 1024;
-    private final MulticastListener mcListener;
-    private final MulticastListener mdbListener;
+    private final MulticastChannelManager mcListener;
+    private final MulticastChannelManager mdbListener;
 
     private String filePath;
     private int totalChunks;
@@ -31,12 +30,12 @@ public class BackupInitiator implements Observer {
     private String fileId;
     private Map<Integer, HashSet<String>> chunksReplication;
 
-    public BackupInitiator(String filePath, String localId, int replicationDeg, MulticastListener mcListener, MulticastListener mdbListener) throws IOException {
+    public BackupInitiator(String filePath, String localId, int replicationDeg, MulticastChannelManager mcChannel, MulticastChannelManager mdbChannel) throws IOException {
         this.filePath = filePath;
         this.localId = localId;
         this.replicationDeg = replicationDeg;
-        this.mcListener = mcListener;
-        this.mdbListener = mdbListener;
+        this.mcListener = mcChannel;
+        this.mdbListener = mdbChannel;
         long fileSize = new File(filePath).length();
         totalChunks = (int)(fileSize / MAXCHUNKSIZE) + 1;
         chunksReplication = new HashMap<>();
@@ -59,7 +58,7 @@ public class BackupInitiator implements Observer {
             for (int i : chunksBelowReplicationDeg) {
                 in.read(buffer, i * MAXCHUNKSIZE, buffer.length);
                 message = new PutChunkMessage(localId, fileId, "" + i, "" + replicationDeg, buffer).getBytes();
-                ChannelManager.getInstance().send(ChannelManager.ChannelType.DATABACKUPCHANNEL, message);
+                mdbListener.send(message);
             }
             try {
                 Thread.sleep(1000);

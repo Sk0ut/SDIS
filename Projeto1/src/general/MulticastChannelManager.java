@@ -2,17 +2,15 @@ package general;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Observable;
+import java.util.*;
 
-public class MulticastListener extends Observable implements Runnable {
+public class MulticastChannelManager extends Observable implements Runnable {
 
     private MulticastSocket ms;
 
-    public MulticastListener(MulticastSocket ms) {
+    public MulticastChannelManager(MulticastSocket ms) {
         this.ms = ms;
     }
 
@@ -20,17 +18,6 @@ public class MulticastListener extends Observable implements Runnable {
 
     public void addSubProtocol(SubProtocolListener subProtocolListener){
         subProtocolListeners.add(subProtocolListener);
-    }
-
-    public void dispatchMessage(byte[] message) throws MalformedMessageException, IOException {
-
-        for (SubProtocolListener subProtocolListener : subProtocolListeners) {
-            try {
-                subProtocolListener.processMessage(message);
-                return;
-            } catch (MalformedMessageException ignored){}
-        }
-        throw new MalformedMessageException("Unrecognized protocol name");
     }
 
     @Override
@@ -46,5 +33,13 @@ public class MulticastListener extends Observable implements Runnable {
                 //dispatchMessage(message);
             } catch (IOException ignored) {}
         }
+    }
+
+    public void send(byte[] sendbuf) throws IOException {
+        DatagramSocket sendSocket = new DatagramSocket();
+        DatagramPacket sendPacket;
+        sendPacket = new DatagramPacket(sendbuf, sendbuf.length, ms.getInetAddress(), ms.getPort());
+        sendSocket.send(sendPacket);
+        sendSocket.close();
     }
 }
