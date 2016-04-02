@@ -19,7 +19,7 @@ public class Logger {
             new File("logs").mkdir();
             DateFormat dateFormat = new SimpleDateFormat("ddMMyyyy_HHmmss");
             Date date = new Date();
-            String logFileName = "logs/dbs_id" + Peer.senderId + "_" + dateFormat.format(date) + ".log";
+            String logFileName = "logs/dbs_id" + Peer.localId + "_" + dateFormat.format(date) + ".log";
             writer = new PrintWriter(logFileName, "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();

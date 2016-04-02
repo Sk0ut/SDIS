@@ -2,55 +2,83 @@ package subprotocol;
 
 
 import communication.ChannelManager;
+import communication.Message;
+import communication.MessageParser;
 import communication.message.PutChunkMessage;
+import communication.message.StoredMessage;
 import general.FilesMetadataManager;
+import general.MalformedMessageException;
+import general.MulticastListener;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Created by Afonso on 31/03/2016.
  */
-public class BackupInitiator {
-    private String filePath;
-    String localId;
-    int replicationDeg;
-    String fileId;
+public class BackupInitiator implements Observer {
+    private static final int MAXCHUNKSIZE = 64 * 1024;
+    private final MulticastListener mcListener;
+    private final MulticastListener mdbListener;
 
-    public BackupInitiator(String filePath, String localId, int replicationDeg) {
+    private String filePath;
+    private int totalChunks;
+    private String localId;
+    private int replicationDeg;
+    private String fileId;
+    private Map<Integer, HashSet<String>> chunksReplication;
+
+    public BackupInitiator(String filePath, String localId, int replicationDeg, MulticastListener mcListener, MulticastListener mdbListener) throws IOException {
         this.filePath = filePath;
         this.localId = localId;
         this.replicationDeg = replicationDeg;
-    }
-
-    private int sendChunks() throws IOException{
-        FileChannel inChannel = new RandomAccessFile(filePath, "r").getChannel();
-        ByteBuffer buffer = ByteBuffer.allocate(64*1024);
-        int i = 0;
-        fileId = generateFileId(filePath);
-        while(inChannel.read(buffer) > 0) {
-            byte[] body = new byte[buffer.remaining()];
-            buffer.get(body, 0, buffer.remaining());
-            byte[] message = new PutChunkMessage(localId, fileId , "" + i, "" + replicationDeg, body).getBytes();
-            ChannelManager.getInstance().send(ChannelManager.ChannelType.DATABACKUPCHANNEL, message);
-            buffer.clear();
+        this.mcListener = mcListener;
+        this.mdbListener = mdbListener;
+        long fileSize = new File(filePath).length();
+        totalChunks = (int)(fileSize / MAXCHUNKSIZE) + 1;
+        chunksReplication = new HashMap<>();
+        for (int i : IntStream.range(0, totalChunks).toArray()){
+            chunksReplication.put(i, new HashSet<>());
         }
-        /*@TODO Subscribe Stored messages for 1 second*/
-        int replication = 0;
-        return replication;
     }
 
-    private void storeMetadata() throws IOException {
-        int replication = 0;
-        do {
-            replication += sendChunks();
-        } while(replication < replicationDeg);
+    public void sendChunks() throws IOException{
+        FileInputStream in = new FileInputStream(filePath);
+        byte[] buffer = new byte[MAXCHUNKSIZE];
+        fileId = generateFileId(filePath);
+        byte[] message;
+        List<Integer> chunksBelowReplicationDeg;
+        while(true) {
+            chunksBelowReplicationDeg = checkReplicationDeg();
+            if (chunksBelowReplicationDeg.size() == 0)
+                break;
+            mcListener.addObserver(this);
+            for (int i : chunksBelowReplicationDeg) {
+                in.read(buffer, i * MAXCHUNKSIZE, buffer.length);
+                message = new PutChunkMessage(localId, fileId, "" + i, "" + replicationDeg, buffer).getBytes();
+                ChannelManager.getInstance().send(ChannelManager.ChannelType.DATABACKUPCHANNEL, message);
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            mcListener.deleteObserver(this);
+        }
+    }
+
+    private List<Integer> checkReplicationDeg(){
+        List<Integer> ret = new ArrayList<>();
+        for(int i : IntStream.range(0, totalChunks).toArray())
+            if(chunksReplication.get(i).size() < replicationDeg)
+                ret.add(i);
+        return ret;
+    }
+
+    public void storeMetadata() throws IOException {
         FilesMetadataManager.getInstance().addIfNotExists(filePath, "" + new File(filePath).lastModified(), fileId, replicationDeg);
     }
 
@@ -66,5 +94,19 @@ public class BackupInitiator {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        MessageParser parser = new StoredMessage.Parser();
+        Message message;
+        try {
+            message = parser.parse((byte[])arg);
+        } catch (IOException | MalformedMessageException e) {
+            return;
+        }
+        int chunkNo = Integer.parseInt(message.getChunkNo());
+        HashSet<String> peers = chunksReplication.get(chunkNo);
+        peers.add(message.getSenderId()); //According to the java docs, if it already exists it just isn't added.
     }
 }

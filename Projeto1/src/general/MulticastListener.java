@@ -6,15 +6,15 @@ import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Observable;
 
-public class MulticastListener implements Runnable {
+public class MulticastListener extends Observable implements Runnable {
 
     private MulticastSocket ms;
 
     public MulticastListener(MulticastSocket ms) {
         this.ms = ms;
     }
-
 
     private List<SubProtocolListener> subProtocolListeners = new ArrayList<>();
 
@@ -41,18 +41,10 @@ public class MulticastListener implements Runnable {
             try {
                 ms.receive(receivePacket);
                 byte[] message = Arrays.copyOf(receivePacket.getData(), receivePacket.getLength());
-                dispatchMessage(message);
-            } catch (IOException | MalformedMessageException e) {
-               Logger.getInstance().printLog("Unrecognized protocol name");
-            }
+                setChanged();
+                notifyObservers(message);
+                //dispatchMessage(message);
+            } catch (IOException ignored) {}
         }
-    }
-
-    public MulticastSocket getMs() {
-        return ms;
-    }
-
-    public void setMs(MulticastSocket ms) {
-        this.ms = ms;
     }
 }
