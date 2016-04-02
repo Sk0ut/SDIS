@@ -4,7 +4,7 @@ import communication.Message;
 import communication.MessageParser;
 import general.MalformedMessageException;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * Created by Flávio on 29/03/2016.

@@ -9,7 +9,10 @@ import general.FilesMetadataManager;
 import general.MalformedMessageException;
 import general.MulticastChannelManager;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;

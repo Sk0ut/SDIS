@@ -4,8 +4,7 @@ import communication.Message;
 import communication.MessageParser;
 import general.MalformedMessageException;
 
-import javax.naming.MalformedLinkException;
-import java.io.*;
+import java.io.IOException;
 
 /**
  * Created by Flávio on 29/03/2016.

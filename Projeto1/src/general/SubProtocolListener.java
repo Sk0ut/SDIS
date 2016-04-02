@@ -1,8 +1,5 @@
 package general;
 
-import com.sun.org.apache.xpath.internal.operations.Mult;
-
-import java.util.Observable;
 import java.util.Observer;
 
 /**
