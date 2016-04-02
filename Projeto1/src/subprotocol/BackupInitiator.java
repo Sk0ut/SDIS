@@ -48,7 +48,7 @@ public class BackupInitiator implements Observer {
     public void sendChunks() throws IOException{
         FileInputStream in = new FileInputStream(filePath);
         byte[] buffer = new byte[MAXCHUNKSIZE];
-        fileId = generateFileId(filePath);
+        fileId = generateFileId();
         byte[] message;
         List<Integer> chunksBelowReplicationDeg;
         while(true) {
@@ -82,7 +82,7 @@ public class BackupInitiator implements Observer {
         FilesMetadataManager.getInstance().addIfNotExists(filePath, "" + new File(filePath).lastModified(), fileId, replicationDeg);
     }
 
-    private String generateFileId(String filePath) {
+    private String generateFileId() {
         try {
             long lastModified = new File(filePath).lastModified();
             String hashable = filePath + lastModified;

@@ -82,12 +82,23 @@ public class Peer implements BackupService{
 
     @Override
     public void restore(String filename) throws RemoteException {
-
+        try {
+            RestoreInitiator ri = new RestoreInitiator(filename, "" + localId, mcListener, mdrListener);
+            ri.getChunks();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void delete(String filename) throws RemoteException {
-
+        try {
+            DeleteInitiator di = new DeleteInitiator(filename, "" + localId);
+            di.deleteFile();
+            di.setMetadata();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
