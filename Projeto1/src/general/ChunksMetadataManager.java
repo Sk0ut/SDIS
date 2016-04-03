@@ -13,12 +13,12 @@ public class ChunksMetadataManager {
 
     private static final String CHUNKS_METADATA_FILENAME = "chunks.metadata";
 
-    private class Entry {
-        String fileId;
-        String chunkNo;
-        String repDegree;
-        String size;
-        Set<String> peers;
+    public class Entry {
+        public String fileId;
+        public String chunkNo;
+        public String repDegree;
+        public String size;
+        public Set<String> peers;
 
         Entry(String fileId, String chunkNo, String repDegree, String size, Set<String> peers) {
             this.fileId = fileId;

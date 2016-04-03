@@ -30,7 +30,7 @@ public class Peer implements BackupService {
         final int PORT_MDR = 8889;
         final String INET_ADDR_MDB = "224.0.0.5";
         final int PORT_MDB = 8890;
-        final int SENDERID = 3;
+        final int SENDERID = 2;
         final int MIN_ARGS = 7;
         final int MAX_ARGS = 8;
 
@@ -103,18 +103,7 @@ public class Peer implements BackupService {
         new StoredListener(""+localId, mcChannel).start();
         new DeleteListener(""+localId, mcChannel).start();
         new GetChunkListener(""+localId, mcChannel, mdrChannel).start();
-
-        /*
-        try {
-            backup((new File("Pikachu.png")).getCanonicalPath(), 1);
-            //delete((new File("Pikachu.png")).getCanonicalPath());
-            //restore((new File("Pikachu.png").getCanonicalPath()));
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
+        new RemovedListener(""+localId, mcChannel, mdbChannel).start();
     }
 
     protected void startMulticastChannelListeners() {
@@ -186,10 +175,10 @@ public class Peer implements BackupService {
             return "Failed to locate file " + filepath;
         }
 
-        FilesMetadataManager.getInstance().getFileId(filepath);
+        String fileId = FilesMetadataManager.getInstance().getFileId(path);
 
         try {
-            DeleteInitiator di = new DeleteInitiator(path, "" + localId, mcChannel);
+            DeleteInitiator di = new DeleteInitiator(fileId, "" + localId, mcChannel);
             di.deleteFile();
             di.setMetadata();
         } catch (IOException e) {
@@ -214,7 +203,7 @@ public class Peer implements BackupService {
         try {
             spaceManager.setReclaimedSpace(space);
             ReclaimInitiator ri = new ReclaimInitiator(space, "" + localId, mcChannel);
-            ri.deleteChunks(-freeSpace());
+            ri.deleteChunks();
             if (freeSpace() < 0) {
                 spaceManager.setReclaimedSpace(space + freeSpace());
                 return "Unable to reclaim " + space + " bytes, reclaimed " + spaceManager.getReclaimedSpace() + " bytes instead." +

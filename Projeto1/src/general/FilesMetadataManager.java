@@ -126,6 +126,15 @@ public class FilesMetadataManager {
         return null;
     }
 
+
+    public boolean ownedFile(String fileId) {
+        for (Entry m : metadata) {
+            if (Objects.equals(m.fileId, fileId))
+                return true;
+        }
+        return false;
+    }
+
     public void addBackingUp(String filePath, String date, String fileId, int numChunks) throws IOException {
         Entry m = findFile(filePath);
         if (m == null) {

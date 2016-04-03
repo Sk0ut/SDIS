@@ -7,6 +7,7 @@ import communication.message.PutChunkMessage;
 import communication.message.StoredMessage;
 import general.*;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class PutChunkListener extends Subprotocol implements Observer {
 
             ChunksMetadataManager chunksMetadataManager = ChunksMetadataManager.getInstance();
 
-            if (msg.getSenderId().equals(getLocalId()))
+            if (FilesMetadataManager.getInstance().ownedFile(msg.getFileId()))
                 return;
 
             if (chunksMetadataManager.findChunk(msg.getFileId(), msg.getChunkNo()) == null) {

@@ -37,11 +37,9 @@ public class DeleteListener extends Subprotocol implements Observer {
                 File f = new File(fileName);
                 ChunksMetadataManager.getInstance().removeFileIfExists(msg.getFileId(), chunk);
                 if (f.exists() && !f.isDirectory()) {
-                    System.out.println(f.getAbsolutePath());
-                    System.out.println(f.delete());
+                    f.delete();
                 }
             }
-            Logger.getInstance().printLog(msg.getHeader());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (MalformedMessageException ignored) {}

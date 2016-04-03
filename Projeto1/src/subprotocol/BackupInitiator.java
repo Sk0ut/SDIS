@@ -44,15 +44,7 @@ public class BackupInitiator {
 
             BackupChunkInitiator initiator = new BackupChunkInitiator(localId, fileId, Integer.toString(chunkNo), replicationDeg, Arrays.copyOf(buffer, size), mcChannel, mdbChannel);
 
-            Thread thread = new Thread(initiator);
-
-            thread.start();
-
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            initiator.run();
 
             if (!initiator.reachedReplicationDeg()) {
                 Logger.getInstance().printLog("Chunk " + chunkNo + " from fileId " + fileId + " failed to reach desired replication degree");

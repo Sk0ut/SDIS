@@ -17,10 +17,9 @@ public class DeleteInitiator {
     private String filePath;
     private MulticastChannel mcChannel;
 
-    public DeleteInitiator(String filename, String localId, MulticastChannel mcChannel){
-        fileId = FilesMetadataManager.getInstance().getFileId(filename);
+    public DeleteInitiator(String fileId, String localId, MulticastChannel mcChannel){
+        this.fileId = fileId;
         this.localId = localId;
-        this.filePath = filename;
         this.mcChannel = mcChannel;
     }
 
