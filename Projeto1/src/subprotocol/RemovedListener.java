@@ -9,9 +9,6 @@ import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
-/**
- * Created by afonso on 26-03-2016.
- */
 public class RemovedListener extends Subprotocol implements Observer {
     private static final MessageParser parser = new RemovedMessage.Parser();
     private MulticastChannel mc;
@@ -32,13 +29,12 @@ public class RemovedListener extends Subprotocol implements Observer {
         Message msg = null;
         try {
             msg = parser.parse((byte[]) arg);
-            Logger.getInstance().printLog(msg.getHeader());
             if (msg.getSenderId().equals(getLocalId()))
                 return;
 
             ChunksMetadataManager.getInstance().removePeerIfExists(msg.getFileId(), msg.getChunkNo(), msg.getSenderId());
             ChunksMetadataManager.Entry entry = ChunksMetadataManager.getInstance().findChunk(msg.getFileId(), msg.getChunkNo());
-            if (Integer.parseInt(entry.repDegree) > entry.peers.size()) {
+            if ((entry != null) && (Integer.parseInt(entry.repDegree) > entry.peers.size())) {
                 new Thread(new ReplicationDegRestoreInitiator(getLocalId(), msg.getFileId(), msg.getChunkNo(), mc, mdb)).start();
             }
         } catch (IOException | MalformedMessageException ignored) {}

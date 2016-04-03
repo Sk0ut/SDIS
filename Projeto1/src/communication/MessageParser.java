@@ -8,9 +8,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Created by Flávio on 29/03/2016.
- */
 public abstract class MessageParser {
 
     protected List<String[]> header;

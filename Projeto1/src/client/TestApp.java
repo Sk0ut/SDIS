@@ -7,9 +7,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-/**
- * Created by Flávio on 30/03/2016.
- */
 public class TestApp {
 
     private static final int MIN_ARGS = 3;

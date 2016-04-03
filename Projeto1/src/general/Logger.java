@@ -9,9 +9,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Created by afonso on 26-03-2016.
- */
 public class Logger {
     private static Logger instance = null;
     private PrintWriter writer = null;

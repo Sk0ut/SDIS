@@ -1,14 +1,11 @@
 package communication;
 
-import client.BackupService;
 import subprotocol.*;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-/**
- * Created by Flávio on 03/04/2016.
- */
+
 public class EnhancedPeer extends Peer {
     public EnhancedPeer(int id, String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress, int mdrPort) throws IOException {
         super(id, mcAddress, mcPort, mdbAddress, mdbPort, mdrAddress, mdrPort);
@@ -28,6 +25,7 @@ public class EnhancedPeer extends Peer {
         new DeleteListener(""+localId, mcChannel).start();
         new DeleteEnhListener("" + localId, mcChannel).start();
         new GetChunkListener(""+localId, mcChannel, mdrChannel).start();
+        new RemovedListener(""+localId, mcChannel, mdbChannel).start();
     }
 
 

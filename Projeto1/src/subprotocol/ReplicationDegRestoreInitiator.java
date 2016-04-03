@@ -1,6 +1,7 @@
 package subprotocol;
 
 import communication.Message;
+import communication.Peer;
 import communication.message.PutChunkMessage;
 import general.ChunksMetadataManager;
 import general.MalformedMessageException;
@@ -9,16 +10,13 @@ import general.Subprotocol;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Created by Flávio on 03/04/2016.
- */
+
 public class ReplicationDegRestoreInitiator extends Subprotocol implements Observer, Runnable {
     private MulticastChannel mc;
     private MulticastChannel mdb;
@@ -49,11 +47,13 @@ public class ReplicationDegRestoreInitiator extends Subprotocol implements Obser
 
         mc.deleteObserver(this);
 
+        System.out.println(backupStarted.get());
+
         if (!backupStarted.get()) {
             ChunksMetadataManager.Entry entry = ChunksMetadataManager.getInstance().findChunk(fileId, chunkNo);
 
             try {
-                FileInputStream in = new FileInputStream(new File(fileId + '-' + chunkNo + ".chunk"));
+                FileInputStream in = new FileInputStream(new File("peer" + Peer.localId + File.separator + fileId + '-' + chunkNo + ".chunk"));
                 byte [] chunk = new byte[64 * 1000];
                 int size = in.read(chunk);
                 new BackupChunkInitiator(getLocalId(), fileId, chunkNo, Integer.parseInt(entry.repDegree), Arrays.copyOf(chunk, size), mc, mdb).run();

@@ -3,9 +3,6 @@ package communication;
 import java.nio.charset.StandardCharsets;
 import java.util.StringJoiner;
 
-/**
- * Created by Flávio on 29/03/2016.
- */
 public abstract class Message {
     private String messageType;
     private String version;

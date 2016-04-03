@@ -17,9 +17,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Created by Flávio on 03/04/2016.
- */
 public class ChunkInitiator extends Subprotocol implements Runnable, Observer {
     private String fileId;
     private String chunkNo;

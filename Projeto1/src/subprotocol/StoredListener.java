@@ -7,9 +7,6 @@ import general.*;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * Created by Afonso on 03/04/2016.
- */
 public class StoredListener extends Subprotocol implements Observer {
     private MulticastChannel mc;
     private static StoredMessage.Parser parser = new StoredMessage.Parser();

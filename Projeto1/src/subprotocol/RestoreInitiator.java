@@ -5,14 +5,12 @@ import communication.MessageParser;
 import communication.message.ChunkMessage;
 import communication.message.GetChunkMessage;
 import general.FilesMetadataManager;
-import general.Logger;
 import general.MalformedMessageException;
 import general.MulticastChannel;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -22,9 +20,6 @@ import java.util.Observer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- * Created by Afonso on 02/04/2016.
- */
 public class RestoreInitiator implements Observer {
     private static final int MAXCHUNKSIZE = 64 * 1000;
     private static final int MAX_ATTEMPTS = 5;

@@ -11,9 +11,7 @@ import general.MulticastChannel;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * Created by Afonso on 02/04/2016.
- */
+
 public class BackupChunkInitiator implements Runnable, Observer {
     private static final int MAX_ATTEMPTS = 5;
     public static final int WAITING_TIME = 1000;
@@ -82,7 +80,6 @@ public class BackupChunkInitiator implements Runnable, Observer {
             return;
 
         storeds.add(message.getSenderId());
-        Logger.getInstance().printLog(new String((byte[])arg));
     }
 
     public boolean reachedReplicationDeg() {

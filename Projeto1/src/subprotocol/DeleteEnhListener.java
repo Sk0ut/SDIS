@@ -9,9 +9,6 @@ import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
-/**
- * Created by Afonso on 03/04/2016.
- */
 public class DeleteEnhListener extends Subprotocol implements Observer{
     private MulticastChannel mc;
 

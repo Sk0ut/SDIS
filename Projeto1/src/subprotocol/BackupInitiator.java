@@ -9,9 +9,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-/**
- * Created by Afonso on 31/03/2016.
- */
 public class BackupInitiator {
     private static final int MAXCHUNKSIZE = 64 * 1000;
     private final MulticastChannel mcChannel;

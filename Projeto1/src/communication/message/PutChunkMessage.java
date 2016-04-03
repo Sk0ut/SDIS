@@ -6,9 +6,7 @@ import general.MalformedMessageException;
 
 import java.io.IOException;
 
-/**
- * Created by Flávio on 29/03/2016.
- */
+
 public class PutChunkMessage extends Message {
 
     private final static String IDENTIFIER = "PUTCHUNK";

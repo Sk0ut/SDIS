@@ -2,9 +2,6 @@ import communication.Peer;
 
 import java.io.IOException;
 
-/**
- * Created by afonso on 28-03-2016.
- */
 public class Main {
     /* No need to use args for now, just put the args here and we change this later */
     public final static String INET_ADDR_MC = "224.0.0.3";

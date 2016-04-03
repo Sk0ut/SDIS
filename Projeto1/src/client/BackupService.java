@@ -3,9 +3,6 @@ package client;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-/**
- * Created by Flávio on 30/03/2016.
- */
 public interface BackupService extends Remote {
     String backup(String filepath, int replicationDeg) throws RemoteException;
     String restore(String filepath) throws RemoteException;

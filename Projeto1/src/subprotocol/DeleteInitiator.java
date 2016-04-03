@@ -6,9 +6,6 @@ import general.MulticastChannel;
 
 import java.io.IOException;
 
-/**
- * Created by Afonso on 02/04/2016.
- */
 public class DeleteInitiator {
     private static final int ATTEMPTS = 5;
 

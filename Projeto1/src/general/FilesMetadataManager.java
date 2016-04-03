@@ -8,9 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-/**
- * Created by Afonso on 31/03/2016.
- */
+
 public class FilesMetadataManager {
 
     public enum FileStatus {

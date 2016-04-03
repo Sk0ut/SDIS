@@ -2,9 +2,7 @@ package subprotocol;
 
 import communication.Message;
 import communication.MessageParser;
-import communication.message.ChunkMessage;
 import communication.message.GetChunkMessage;
-import general.Logger;
 import general.MalformedMessageException;
 import general.MulticastChannel;
 import general.Subprotocol;
@@ -15,9 +13,7 @@ import java.util.Observer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-/**
- * Created by afonso on 26-03-2016.
- */
+
 public class GetChunkListener extends Subprotocol implements Observer{
     private static final MessageParser getChunkParser = new GetChunkMessage.Parser();
     private MulticastChannel mc;

@@ -11,9 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by Afonso on 02/04/2016.
- */
 public class ReclaimInitiator {
     private final String localId;
     private final long space;

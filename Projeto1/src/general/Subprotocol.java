@@ -1,8 +1,5 @@
 package general;
 
-/**
- * Created by Afonso on 02/04/2016.
- */
 public class Subprotocol {
     private String localId;
 

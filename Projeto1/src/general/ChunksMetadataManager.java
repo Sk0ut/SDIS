@@ -6,9 +6,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.IntStream;
 
-/**
- * Created by Afonso on 31/03/2016.
- */
 public class ChunksMetadataManager {
 
     private static final String CHUNKS_METADATA_FILENAME = "chunks.metadata";

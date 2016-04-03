@@ -10,9 +10,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-/**
- * Created by afonso on 26-03-2016.
- */
 public class DeleteListener extends Subprotocol implements Observer {
     private static final DeleteMessage.Parser parser = new DeleteMessage.Parser();
     private MulticastChannel mc;

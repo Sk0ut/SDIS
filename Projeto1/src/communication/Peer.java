@@ -41,7 +41,7 @@ public class Peer implements BackupService {
         int mdbPort = PORT_MDB;
         String mdrAddress = INET_ADDR_MDR;
         int mdrPort = PORT_MDR;
-        boolean enhanced = true;
+        boolean enhanced = false;
 
         if (args.length != 0) {
             if (! (MIN_ARGS <= args.length && args.length <= MAX_ARGS) ) {
@@ -189,15 +189,16 @@ public class Peer implements BackupService {
     }
 
     @Override
-    public String reclaim(long space) throws RemoteException {
+    public String reclaim(long spaceUnbound) throws RemoteException {
         SpaceMetadataManager spaceManager = SpaceMetadataManager.getInstance();
+        long space = Math.min(spaceUnbound, spaceManager.MAX_SPACE);
         if (space <= freeSpace() + spaceManager.getReclaimedSpace()) {
             try {
                 spaceManager.setReclaimedSpace(space);
             } catch (IOException e) {
                 return "Failed to reclaim space";
             }
-            return "Reclaimed " + space + " bytes. Reserved backup space: " + spaceManager.getAvailableSpace() + " bytes.";
+            return "Reclaimed " + space + " bytes without deleting chunks. Reserved backup space: " + spaceManager.getAvailableSpace() + " bytes.";
         }
 
         try {
@@ -206,7 +207,7 @@ public class Peer implements BackupService {
             ri.deleteChunks();
             if (freeSpace() < 0) {
                 spaceManager.setReclaimedSpace(space + freeSpace());
-                return "Unable to reclaim " + space + " bytes, reclaimed " + spaceManager.getReclaimedSpace() + " bytes instead." +
+                return "Unable to reclaim " + spaceUnbound + " bytes, reclaimed " + spaceManager.getReclaimedSpace() + " bytes instead. " +
                         "Reserved backup space: " + spaceManager.getAvailableSpace() + " bytes";
             }
 
