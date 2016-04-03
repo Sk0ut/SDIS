@@ -56,9 +56,9 @@ public class Peer implements BackupService{
         new Thread(mdrChannel).start();
 
         try {
-            //backup((new File("Pikachu.png")).getCanonicalPath(), 1);
+            backup((new File("Pikachu.png")).getCanonicalPath(), 1);
             //delete((new File("Pikachu.png")).getCanonicalPath());
-            restore((new File("Pikachu.png").getCanonicalPath()));
+            //restore((new File("Pikachu.png").getCanonicalPath()));
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -70,8 +70,9 @@ public class Peer implements BackupService{
     public void backup(String filepath, int replicationDeg) throws RemoteException {
         try {
             BackupInitiator bi = new BackupInitiator(filepath, "" + localId, replicationDeg, mcChannel, mdbChannel);
-            bi.sendChunks();
             bi.storeMetadata();
+            bi.sendChunks();
+            bi.updateMetadata();
         } catch (IOException e) {
             e.printStackTrace();
         }

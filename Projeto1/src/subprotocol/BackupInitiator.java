@@ -1,10 +1,6 @@
 package subprotocol;
 
 
-import communication.Message;
-import communication.MessageParser;
-import communication.message.PutChunkMessage;
-import communication.message.StoredMessage;
 import general.*;
 
 import java.io.*;
@@ -12,8 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 
 /**
  * Created by Afonso on 31/03/2016.
@@ -37,12 +31,12 @@ public class BackupInitiator {
         this.mdbChannel = mdbChannel;
         long fileSize = new File(filePath).length();
         this.totalChunks = (int)(fileSize / MAXCHUNKSIZE) + 1;
+        this.fileId = generateFileId();
     }
 
     public void sendChunks() throws IOException {
         RandomAccessFile in = new RandomAccessFile(filePath, "r");
         byte[] buffer = new byte[MAXCHUNKSIZE];
-        fileId = generateFileId();
 
         for (int chunkNo = 0; chunkNo < totalChunks; ++chunkNo) {
             in.seek(chunkNo * MAXCHUNKSIZE);
@@ -67,7 +61,7 @@ public class BackupInitiator {
     }
 
     public void storeMetadata() throws IOException {
-        FilesMetadataManager.getInstance().addIfNotExists(filePath, "" + new File(filePath).lastModified(), fileId, replicationDeg);
+        FilesMetadataManager.getInstance().addBackingUp(filePath, "" + new File(filePath).lastModified(), fileId, replicationDeg);
     }
 
     private String generateFileId() {
@@ -86,5 +80,9 @@ public class BackupInitiator {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void updateMetadata() throws IOException {
+        FilesMetadataManager.getInstance().changeFileStatus(filePath, FilesMetadataManager.FileStatus.BACKEDUP);
     }
 }

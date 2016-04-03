@@ -6,27 +6,49 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * Created by Afonso on 31/03/2016.
  */
 public class FilesMetadataManager {
 
+    public enum FileStatus {
+        BACKEDUP,
+        BACKINGUP,
+        DELETED
+    }
+
     private class Entry {
         String filePath;
         String modificationDate;
         String fileId;
         int numChunks;
+        FileStatus fs;
 
-        Entry(String filePath, String date, String fileId, int numChunks) {
+        Entry(String filePath, String date, String fileId, int numChunks, FileStatus fs) {
             this.filePath = filePath;
             this.modificationDate = date;
             this.fileId = fileId;
             this.numChunks = numChunks;
+            this.fs = fs;
         }
 
         public String toString() {
-            return filePath + "|" + modificationDate + "|" + fileId + "|" + numChunks;
+            StringJoiner sj = new StringJoiner("|");
+            sj.add(filePath).add(modificationDate).add(fileId).add("" + numChunks);
+            switch(fs){
+                case BACKEDUP:
+                    sj.add("backed-up");
+                    break;
+                case BACKINGUP:
+                    sj.add("backing-up");
+                    break;
+                case DELETED:
+                    sj.add("deleted");
+                    break;
+            }
+            return sj.toString();
         }
     }
 
@@ -81,7 +103,19 @@ public class FilesMetadataManager {
         String modificationDate = elements[1];
         String fileId = elements[2];
         int numChunks = Integer.parseInt(elements[3]);
-        metadata.add(new Entry(filePath, modificationDate, fileId, numChunks));
+        FileStatus fs;
+        switch(elements[4]){
+            case "backed-up":
+                fs = FileStatus.BACKEDUP;
+                break;
+            case "backing-up":
+                fs = FileStatus.BACKINGUP;
+                break;
+            default:
+                fs = FileStatus.DELETED;
+                break;
+        }
+        metadata.add(new Entry(filePath, modificationDate, fileId, numChunks, fs));
     }
 
     private Entry findFile(String filePath) {
@@ -92,10 +126,14 @@ public class FilesMetadataManager {
         return null;
     }
 
-    public void addIfNotExists(String filePath, String date, String fileId, int numChunks) throws IOException {
+    public void addBackingUp(String filePath, String date, String fileId, int numChunks) throws IOException {
         Entry m = findFile(filePath);
         if (m == null) {
-            metadata.add(new Entry(filePath, date, fileId, numChunks));
+            metadata.add(new Entry(filePath, date, fileId, numChunks, FileStatus.BACKINGUP));
+            save();
+        }
+        else {
+            m.fs = FileStatus.BACKINGUP;
             save();
         }
     }
@@ -112,6 +150,30 @@ public class FilesMetadataManager {
         Entry m = findFile(filePath);
         if(m != null){
             return m.fileId;
+        }
+        return null;
+    }
+
+    public void changeFileStatus(String filePath, FileStatus fs) throws IOException {
+        Entry m = findFile(filePath);
+        if (m != null) {
+            m.fs = fs;
+        }
+        save();
+    }
+
+    public Entry findDeletedFileById(String fileId){
+        Entry entry = null;
+        for (Entry m : metadata) {
+            if (Objects.equals(m.fileId, fileId)) {
+                entry = m;
+                break;
+            }
+        }
+        if (entry != null){
+            if (entry.fs == FileStatus.DELETED) {
+                return entry;
+            }
         }
         return null;
     }
