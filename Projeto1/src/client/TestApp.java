@@ -95,7 +95,7 @@ public class TestApp {
         return service.delete(filename);
     }
     private String deleteEnh(String filename) throws RemoteException {
-        return service.delete(filename);
+        return service.deleteEnh(filename);
     }
 
     private String reclaim(String spaceString) throws RemoteException {
@@ -112,7 +112,7 @@ public class TestApp {
 
         final long space = Long.parseLong(spaceString);
 
-        return service.reclaim(space);
+        return service.reclaimEnh(space);
     }
 
 
