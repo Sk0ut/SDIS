@@ -18,13 +18,13 @@ import java.rmi.server.UnicastRemoteObject;
  * Created by afonso on 26-03-2016.
  */
 public class Peer implements BackupService {
-    private MulticastChannel mcChannel;
-    private MulticastChannel mdbChannel;
-    private MulticastChannel mdrChannel;
-    public static int localId;
+    protected MulticastChannel mcChannel;
+    protected MulticastChannel mdbChannel;
+    protected MulticastChannel mdrChannel;
+    protected int localId;
 
     public Peer(int id, String mcAddress, int mcPort, String mdbAddress, int mdbPort, String mdrAddress, int mdrPort) throws IOException {
-        Peer.localId = id;
+        localId = id;
         new File("peer"+ id).mkdir();
         ChunksMetadataManager.getInstance().init("" + id);
         FilesMetadataManager.getInstance().init("" + id);
@@ -35,27 +35,18 @@ public class Peer implements BackupService {
     }
 
     public void start() {
-
-        BackupService service = null;
-        Registry registry = null;
-
         try {
-            service = (BackupService) UnicastRemoteObject.exportObject(this, 0);
-            registry = LocateRegistry.getRegistry();
-            registry.rebind(Integer.toString(localId), service);
+            registerRMI();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
 
+        startMulticastChannelListeners();
 
         new PutChunkListener("" + localId, mcChannel, mdbChannel).start();
         new StoredListener(""+localId, mcChannel).start();
         new DeleteListener(""+localId, mcChannel).start();
         new GetChunkListener(""+localId, mcChannel, mdrChannel).start();
-
-        new Thread(mcChannel).start();
-        new Thread(mdbChannel).start();
-        new Thread(mdrChannel).start();
 
         /*
         try {
@@ -68,6 +59,18 @@ public class Peer implements BackupService {
             e.printStackTrace();
         }
         */
+    }
+
+    protected void startMulticastChannelListeners() {
+        new Thread(mcChannel).start();
+        new Thread(mdbChannel).start();
+        new Thread(mdrChannel).start();
+    }
+
+    protected void registerRMI() throws RemoteException {
+        BackupService service = (BackupService) UnicastRemoteObject.exportObject(this, 0);
+        Registry registry = LocateRegistry.getRegistry();
+        registry.rebind(Integer.toString(localId), service);
     }
 
     @Override
