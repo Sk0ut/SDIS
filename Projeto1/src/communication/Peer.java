@@ -57,15 +57,17 @@ public class Peer implements BackupService {
         new Thread(mdbChannel).start();
         new Thread(mdrChannel).start();
 
+        /*
         try {
             //backup((new File("Pikachu.png")).getCanonicalPath(), 1);
             //delete((new File("Pikachu.png")).getCanonicalPath());
-            restore((new File("Pikachu.png").getCanonicalPath()));
+            //restore((new File("Pikachu.png").getCanonicalPath()));
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        */
     }
 
     @Override
