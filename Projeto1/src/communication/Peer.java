@@ -4,6 +4,7 @@ import client.BackupService;
 import general.ChunksMetadataManager;
 import general.FilesMetadataManager;
 import general.MulticastChannel;
+import general.SpaceMetadataManager;
 import subprotocol.*;
 
 import java.io.File;
@@ -16,7 +17,7 @@ import java.rmi.server.UnicastRemoteObject;
 /**
  * Created by afonso on 26-03-2016.
  */
-public class Peer implements BackupService{
+public class Peer implements BackupService {
     private MulticastChannel mcChannel;
     private MulticastChannel mdbChannel;
     private MulticastChannel mdrChannel;
@@ -27,6 +28,7 @@ public class Peer implements BackupService{
         new File("peer"+ id).mkdir();
         ChunksMetadataManager.getInstance().init("" + id);
         FilesMetadataManager.getInstance().init("" + id);
+        SpaceMetadataManager.getInstance().init("" + id);
         mcChannel = new MulticastChannel(mcAddress, mcPort);
         mdbChannel = new MulticastChannel(mdbAddress, mdbPort);
         mdrChannel = new MulticastChannel(mdrAddress, mdrPort);
@@ -67,41 +69,106 @@ public class Peer implements BackupService{
     }
 
     @Override
-    public void backup(String filepath, int replicationDeg) throws RemoteException {
+    public String backup(String filepath, int replicationDeg) throws RemoteException {
+        String path;
         try {
-            BackupInitiator bi = new BackupInitiator(filepath, "" + localId, replicationDeg, mcChannel, mdbChannel);
+             path = new File(filepath).getCanonicalPath();
+        } catch (IOException e) {
+            return "Failed to locate file " + filepath;
+        }
+
+        try {
+            BackupInitiator bi = new BackupInitiator(path, "" + localId, replicationDeg, mcChannel, mdbChannel);
             bi.sendChunks();
             bi.storeMetadata();
         } catch (IOException e) {
-            e.printStackTrace();
+            return "Failed to backup file " + filepath;
         }
+
+        return "File " + filepath + " backed up";
     }
 
     @Override
-    public void restore(String filepath) throws RemoteException {
+    public String restore(String filepath) throws RemoteException {
+        String path;
         try {
-            if (FilesMetadataManager.getInstance().getFileId(filepath) == null)
-                return;
-            RestoreInitiator ri = new RestoreInitiator(filepath, "" + localId, mcChannel, mdrChannel);
-            ri.getChunks();
+            path = new File(filepath).getCanonicalPath();
         } catch (IOException e) {
-            e.printStackTrace();
+            return "Failed to locate file " + filepath;
+        }
+
+        try {
+            if (FilesMetadataManager.getInstance().getFileId(path) == null)
+                return "File not registered in backup system";
+            RestoreInitiator ri = new RestoreInitiator(path, "" + localId, mcChannel, mdrChannel);
+            if (ri.getChunks()) {
+                return filepath + " restored sucessfully";
+            } else {
+                return "Failed to restore file " + filepath;
+            }
+        } catch (IOException e) {
+            return "Failed to restore file " + filepath;
         }
     }
 
     @Override
-    public void delete(String filepath) throws RemoteException {
+    public String delete(String filepath) throws RemoteException {
+        String path;
         try {
-            DeleteInitiator di = new DeleteInitiator(filepath, "" + localId, mcChannel);
+            path = new File(filepath).getCanonicalPath();
+        } catch (IOException e) {
+            return "Failed to locate file " + filepath;
+        }
+
+        FilesMetadataManager.getInstance().getFileId(filepath);
+
+        try {
+            DeleteInitiator di = new DeleteInitiator(path, "" + localId, mcChannel);
             di.deleteFile();
             di.setMetadata();
         } catch (IOException e) {
-            e.printStackTrace();
+            return "Failed to remove file " + filepath + " from backup system";
         }
+
+        return "File " + filepath + " removed from backup system";
     }
 
     @Override
-    public void reclaim(long space) throws RemoteException {
+    public String reclaim(long space) throws RemoteException {
+        SpaceMetadataManager spaceManager = SpaceMetadataManager.getInstance();
+        if (space <= spaceManager.getReclaimedSpace()) {
+            try {
+                spaceManager.setReclaimedSpace(space);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return "Reclaimed " + space + " bytes. Reserved backup space: " + spaceManager.getAvailableSpace() + " bytes.";
+        }
+
+        // Check for unused space
+
         ReclaimInitiator ri = new ReclaimInitiator(space, "" + localId, mcChannel);
+
+        return "Reclaimed " + space + " bytes. Reserved backup space: " + spaceManager.getAvailableSpace() + " bytes";
+    }
+
+    @Override
+    public String backupEnh(String filepath, int replicationDeg) throws RemoteException {
+        return "Subprotocol not supported";
+    }
+
+    @Override
+    public String restoreEnh(String filepath) throws RemoteException {
+        return "Subprotocol not supported";
+    }
+
+    @Override
+    public String deleteEnh(String filepath) throws RemoteException {
+        return "Subprotocol not supported";
+    }
+
+    @Override
+    public String reclaimEnh(long space) throws RemoteException {
+        return "Subprotocol not supported";
     }
 }

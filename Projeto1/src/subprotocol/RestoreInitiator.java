@@ -49,7 +49,7 @@ public class RestoreInitiator implements Observer {
         this.fileId = FilesMetadataManager.getInstance().getFileId(filePath);
     }
 
-    public void getChunks() throws IOException {
+    public boolean getChunks() throws IOException {
         mdrChannel.addObserver(this);
         this.file.setLength(0);
         int attempts;
@@ -76,7 +76,10 @@ public class RestoreInitiator implements Observer {
 
         if (attempts == MAX_ATTEMPTS) {
             new File(filePath).delete();
+            return false;
         }
+
+        return true;
     }
 
     @Override
