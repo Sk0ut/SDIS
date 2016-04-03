@@ -49,15 +49,19 @@ public class Peer implements BackupService{
         new PutChunkListener("" + localId, mcChannel, mdbChannel).start();
         new StoredListener(""+localId, mcChannel).start();
         new DeleteListener(""+localId, mcChannel).start();
+        new GetChunkListener(""+localId, mcChannel, mdrChannel).start();
 
         new Thread(mcChannel).start();
         new Thread(mdbChannel).start();
         new Thread(mdrChannel).start();
 
         try {
-            backup("C:\\Users\\Afonso\\Desktop\\Faculdade\\2º Semestre\\SDIS\\Projeto1\\ba15a584ca7d7265.jpg", 1);
-            delete("C:\\Users\\Afonso\\Desktop\\Faculdade\\2º Semestre\\SDIS\\Projeto1\\ba15a584ca7d7265.jpg");
+            //backup((new File("Pikachu.png")).getCanonicalPath(), 1);
+            //delete((new File("Pikachu.png")).getCanonicalPath());
+            restore((new File("Pikachu.png").getCanonicalPath()));
         } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -76,6 +80,8 @@ public class Peer implements BackupService{
     @Override
     public void restore(String filepath) throws RemoteException {
         try {
+            if (FilesMetadataManager.getInstance().getFileId(filepath) == null)
+                return;
             RestoreInitiator ri = new RestoreInitiator(filepath, "" + localId, mcChannel, mdrChannel);
             ri.getChunks();
         } catch (IOException e) {

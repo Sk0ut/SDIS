@@ -12,17 +12,22 @@ import general.Subprotocol;
 import java.io.*;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Created by afonso on 26-03-2016.
  */
 public class GetChunkListener extends Subprotocol implements Observer{
-    private static final MessageParser parser = new GetChunkMessage.Parser();
+    private static final MessageParser getChunkParser = new GetChunkMessage.Parser();
     private MulticastChannel mc;
     private MulticastChannel mdr;
+    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 
     public GetChunkListener(String localId, MulticastChannel mc, MulticastChannel mdr) {
         super(localId);
+        this.mc = mc;
+        this.mdr = mdr;
     }
 
     public void start() {
@@ -33,25 +38,17 @@ public class GetChunkListener extends Subprotocol implements Observer{
     public void update(Observable o, Object arg) {
         Message msg = null;
         try {
-            msg = parser.parse((byte[])arg);
+            msg = getChunkParser.parse((byte[])arg);
             String fileName = "peer" + getLocalId() + "/" + msg.getFileId() + "-" + msg.getChunkNo() + ".chunk";
             File f = new File(fileName);
             if(f.exists() && !f.isDirectory()){
-                FileInputStream in = new FileInputStream(fileName);
-                byte[] buffer =  new byte[64*1000];
-                in.read(buffer, 0, buffer.length);
-                Logger.getInstance().printLog(msg.getHeader());
-                try {
-                    Thread.sleep((long) (Math.random() * 400));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                byte[] message = new ChunkMessage(getLocalId(), msg.getFileId(), msg.getChunkNo(),
-                        buffer).getBytes();
-                mdr.send(message);
+                ChunkInitiator initiator = new ChunkInitiator(getLocalId(), msg.getFileId(), msg.getChunkNo(), mdr);
+                executor.execute(initiator);
             }
         } catch (IOException | MalformedMessageException e) {
             //e.printStackTrace();
         }
+
+
     }
 }

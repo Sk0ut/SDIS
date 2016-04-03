@@ -3,10 +3,7 @@ package subprotocol;
 import communication.Message;
 import communication.MessageParser;
 import communication.message.RemovedMessage;
-import general.Logger;
-import general.MalformedMessageException;
-import general.MulticastChannel;
-import general.Subprotocol;
+import general.*;
 
 import java.io.IOException;
 import java.util.Observable;
@@ -34,6 +31,7 @@ public class RemovedListener extends Subprotocol implements Observer {
         Message msg = null;
         try {
             msg = parser.parse((byte[]) arg);
+            ChunksMetadataManager.getInstance().removePeerIfExists(msg.getFileId(), msg.getChunkNo(), msg.getSenderId());
             Logger.getInstance().printLog(msg.getHeader());
         } catch (IOException | MalformedMessageException e) {
             e.printStackTrace();

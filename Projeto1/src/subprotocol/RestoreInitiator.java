@@ -5,12 +5,17 @@ import communication.MessageParser;
 import communication.message.ChunkMessage;
 import communication.message.GetChunkMessage;
 import general.FilesMetadataManager;
+import general.Logger;
 import general.MalformedMessageException;
 import general.MulticastChannel;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -22,6 +27,7 @@ import java.util.stream.IntStream;
  */
 public class RestoreInitiator implements Observer {
     private static final int MAXCHUNKSIZE = 64 * 1000;
+    private static final int MAX_ATTEMPTS = 5;
     private final MulticastChannel mcChannel;
     private final MulticastChannel mdrChannel;
     private final String filePath;
@@ -31,32 +37,45 @@ public class RestoreInitiator implements Observer {
     private RandomAccessFile file;
 
     public RestoreInitiator(String filePath, String localId, MulticastChannel mcChannel, MulticastChannel mdrChannel) throws IOException {
-        this.filePath = filePath;
+        Path path = Paths.get(filePath);
+        this.filePath = path.getParent() + File.separator + "Restore" + localId + '_' + path.getFileName();
         this.localId = localId;
         this.mcChannel = mcChannel;
         this.mdrChannel = mdrChannel;
         long fileSize = new File(filePath).length();
         int totalChunks = (int) (fileSize / MAXCHUNKSIZE) + 1;
-        this.chunksToReceive = IntStream.range(0, totalChunks).boxed().collect(Collectors.toList());
-        this.file = new RandomAccessFile(filePath, "w");
+        this.chunksToReceive = Collections.synchronizedList(IntStream.range(0, totalChunks).boxed().collect(Collectors.toList()));
+        this.file = new RandomAccessFile(this.filePath, "rw");
         this.fileId = FilesMetadataManager.getInstance().getFileId(filePath);
     }
 
     public void getChunks() throws IOException {
-        while (true) {
-            mdrChannel.addObserver(this);
-            for (int i : chunksToReceive) {
-                byte[] message = new GetChunkMessage(localId, fileId, "" + i).getBytes();
-                mcChannel.send(message);
+        mdrChannel.addObserver(this);
+        this.file.setLength(0);
+        int attempts;
+        for (attempts = 0; attempts < MAX_ATTEMPTS; ++attempts) {
+            synchronized (this) {
+                for (int i : chunksToReceive) {
+                    byte[] message = new GetChunkMessage(localId, fileId, "" + i).getBytes();
+                    mcChannel.send(message);
+                }
             }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            mdrChannel.deleteObserver(this);
-            if (chunksToReceive.size() == 0)
-                break;
+            synchronized (this) {
+                if (chunksToReceive.size() == 0)
+                    break;
+            }
+
+        }
+        mdrChannel.deleteObserver(this);
+        file.close();
+
+        if (attempts == MAX_ATTEMPTS) {
+            new File(filePath).delete();
         }
     }
 
@@ -72,11 +91,15 @@ public class RestoreInitiator implements Observer {
         if(!message.getFileId().equals(fileId))
             return;
         int chunkNo = Integer.parseInt(message.getChunkNo());
-        if (chunksToReceive.contains(chunkNo) ){
-            try {
-                file.write(message.getBody(), chunkNo * MAXCHUNKSIZE, message.getBody().length);
-                chunksToReceive.remove(chunkNo);
-            } catch (IOException ignored) {}
+
+        synchronized (this) {
+            if (chunksToReceive.contains(chunkNo)) {
+                try {
+                    file.write(message.getBody(), chunkNo * MAXCHUNKSIZE, message.getBody().length);
+                    chunksToReceive.remove(chunkNo);
+                } catch (IOException ignored) {}
+            }
         }
+
     }
 }
