@@ -24,48 +24,30 @@ public class Peer implements BackupService {
     public static int localId;
 
     public static void main(String [] args){
-        final String INET_ADDR_MC = "224.0.0.3";
-        final int PORT_MC = 8891;
-        final String INET_ADDR_MDR = "224.0.0.4";
-        final int PORT_MDR = 8889;
-        final String INET_ADDR_MDB = "224.0.0.5";
-        final int PORT_MDB = 8890;
-        final int SENDERID = 1;
         final int MIN_ARGS = 7;
         final int MAX_ARGS = 8;
 
-        int id = SENDERID;
-        String mcAddress = INET_ADDR_MC;
-        int mcPort = PORT_MC;
-        String mdbAddress = INET_ADDR_MDB;
-        int mdbPort = PORT_MDB;
-        String mdrAddress = INET_ADDR_MDR;
-        int mdrPort = PORT_MDR;
-        boolean enhanced = true;
+        if (! (MIN_ARGS <= args.length && args.length <= MAX_ARGS) ) {
+            System.out.println("Usage: Peer <id> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port> [ENH]");
+            System.out.println("No arguments for default values");
+            return;
+        }
 
-        if (args.length != 0) {
-            if (! (MIN_ARGS <= args.length && args.length <= MAX_ARGS) ) {
+        int id = Integer.parseInt(args[0]);
+        String mcAddress = args[1];
+        int mcPort = Integer.parseInt(args[2]);
+        String mdbAddress = args[3];
+        int mdbPort = Integer.parseInt(args[4]);
+        String mdrAddress = args[5];
+        int mdrPort = Integer.parseInt(args[6]);
+        boolean enhanced = false;
+
+        if (args.length == MAX_ARGS) {
+            if (args[7].equalsIgnoreCase("ENH"))
+                enhanced = true;
+            else {
                 System.out.println("Usage: Peer <id> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port> [ENH]");
-                System.out.println("No arguments for default values");
                 return;
-            }
-
-            id = Integer.parseInt(args[0]);
-            mcAddress = args[1];
-            mcPort = Integer.parseInt(args[2]);
-            mdbAddress = args[3];
-            mdbPort = Integer.parseInt(args[4]);
-            mdrAddress = args[5];
-            mdrPort = Integer.parseInt(args[6]);
-
-            if (args.length == MAX_ARGS) {
-                if (args[7].equals("ENH"))
-                    enhanced = true;
-                else {
-                    System.out.println("Usage: Peer <id> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port> [ENH]");
-                    System.out.print("No arguments for default values");
-                    return;
-                }
             }
         }
 
