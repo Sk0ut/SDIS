@@ -102,6 +102,6 @@ public class Peer implements BackupService{
 
     @Override
     public void reclaim(long space) throws RemoteException {
-        ReclaimInitiator ri = new ReclaimInitiator(space, "" + localId);
+        ReclaimInitiator ri = new ReclaimInitiator(space, "" + localId, mcChannel);
     }
 }

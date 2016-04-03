@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Created by Afonso on 31/03/2016.
@@ -143,6 +144,20 @@ public class ChunksMetadataManager {
             metadata.add(new Entry(fileId, chunkNo, replicationDeg, peers));
             save();
         }
+    }
+
+    public List<ChunkIdentifier> getNRemovableChunks(long n){
+        List<ChunkIdentifier> chunks = new ArrayList<>();
+        for(int i : IntStream.range(0, metadata.size()).toArray()){
+            if(metadata.get(i).peers.size() - Integer.parseInt(metadata.get(i).repDegree) > 0)
+                chunks.add(new ChunkIdentifier(metadata.get(i).fileId, metadata.get(i).chunkNo));
+            if(chunks.size() >= n)
+                break;
+        }
+        if (chunks.size() < n){
+
+        }
+        return chunks;
     }
 
     public Set<ChunkIdentifier> getBackedUpChunks(){
