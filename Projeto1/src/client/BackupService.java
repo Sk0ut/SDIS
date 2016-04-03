@@ -7,8 +7,14 @@ import java.rmi.RemoteException;
  * Created by Flávio on 30/03/2016.
  */
 public interface BackupService extends Remote {
-    void backup(String filepath, int replicationDeg) throws RemoteException;
-    void restore(String filepath) throws RemoteException;
-    void delete(String filepath) throws RemoteException;
-    void reclaim(long space) throws RemoteException;
+    String backup(String filepath, int replicationDeg) throws RemoteException;
+    String restore(String filepath) throws RemoteException;
+    String delete(String filepath) throws RemoteException;
+    String reclaim(long space) throws RemoteException;
+
+
+    String backupEnh(String filepath, int replicationDeg) throws RemoteException;
+    String restoreEnh(String filepath) throws RemoteException;
+    String deleteEnh(String filepath) throws RemoteException;
+    String reclaimEnh(long space) throws RemoteException;
 }

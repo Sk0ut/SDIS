@@ -17,12 +17,14 @@ public class ChunksMetadataManager {
         String fileId;
         String chunkNo;
         String repDegree;
+        String size;
         Set<String> peers;
 
-        Entry(String fileId, String chunkNo, String repDegree, Set<String> peers) {
+        Entry(String fileId, String chunkNo, String repDegree, String size, Set<String> peers) {
             this.fileId = fileId;
             this.chunkNo = chunkNo;
             this.repDegree = repDegree;
+            this.size = size;
             this.peers = peers;
         }
 
@@ -30,7 +32,8 @@ public class ChunksMetadataManager {
             StringJoiner sb = new StringJoiner("|");
             sb.add(fileId)
                 .add(chunkNo)
-                .add(repDegree);
+                .add(repDegree)
+                .add(size);
             for (String peer : peers)
                 sb.add(peer);
 
@@ -97,9 +100,10 @@ public class ChunksMetadataManager {
         String fileId = elements[0];
         String chunkNo = elements[1];
         String repDegree = elements[2];
+        String size = elements[3];
         Set<String> senders = new HashSet<>();
-        senders.addAll(Arrays.asList(elements).subList(3, elements.length));
-        metadata.add(new Entry(fileId, chunkNo, repDegree, senders));
+        senders.addAll(Arrays.asList(elements).subList(4, elements.length));
+        metadata.add(new Entry(fileId, chunkNo, repDegree, size, senders));
     }
 
     public void removeFileIfExists(String fileId, String chunkNo) throws IOException {
@@ -138,10 +142,10 @@ public class ChunksMetadataManager {
         }
     }
 
-    public void addFileIfNotExists(String fileId, String chunkNo, String replicationDeg, Set<String> peers) throws IOException {
+    public void addFileIfNotExists(String fileId, String chunkNo, String replicationDeg, String size, Set<String> peers) throws IOException {
         Entry f = findChunk(fileId, chunkNo);
         if (f == null){
-            metadata.add(new Entry(fileId, chunkNo, replicationDeg, peers));
+            metadata.add(new Entry(fileId, chunkNo, replicationDeg, size,peers));
             save();
         }
     }
@@ -166,5 +170,14 @@ public class ChunksMetadataManager {
             ret.add(new ChunkIdentifier(e.fileId, e.chunkNo));
         }
         return ret;
+    }
+
+    public long getOccupiedSpace() {
+        long space = 0;
+        for (Entry e : metadata) {
+            space += Long.parseLong(e.size);
+        }
+
+        return space;
     }
 }

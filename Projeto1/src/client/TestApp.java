@@ -27,61 +27,93 @@ public class TestApp {
         service = (BackupService) registry.lookup("" + peerAP);
     }
 
-    public void execute(String subProtocol, String opnd1, String opnd2) throws RemoteException {
+    public String execute(String subProtocol, String opnd1, String opnd2) throws RemoteException {
         switch (subProtocol) {
             case "BACKUP":
                 if (opnd2 == null)
-                    throw new IllegalArgumentException("BACKUP subprotocol has 2 operands");
-                backup(opnd1, opnd2);
-                break;
+                    return "BACKUP subprotocol has 2 operands";
+                return backup(opnd1, opnd2);
+            case "BACKUPENH":
+                if (opnd2 == null)
+                    return "BACKUPENH subprotocol has 2 operands";
+                return backupEnh(opnd1, opnd2);
             case "RESTORE":
                 if (opnd2 != null)
-                    throw new IllegalArgumentException("RESTORE subprotocol only has 1 operand");
-                restore(opnd1);
-                break;
+                    return "RESTORE subprotocol only has 1 operand";
+                return restore(opnd1);
+            case "RESTOREENH":
+                if (opnd2 != null)
+                    return "RESTOREENH subprotocol only has 1 operand";
+                return restoreEnh(opnd1);
             case "DELETE":
                 if (opnd2 != null)
-                    throw new IllegalArgumentException("DELETE subprotocol only has 1 operand");
-                delete(opnd1);
-                break;
+                    return "DELETE subprotocol only has 1 operand";
+                return delete(opnd1);
+            case "DELETEENH":
+                if (opnd2 != null)
+                    return "DELETEENH subprotocol only has 1 operand";
+                return deleteEnh(opnd1);
             case "RECLAIM":
                 if (opnd2 != null)
-                    throw new IllegalArgumentException("RECLAIM subprotocol only has 1 operand");
-                reclaim(opnd1);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown subprotocol: " + subProtocol);
+                    return "RECLAIM subprotocol only has 1 operand";
+                return reclaim(opnd1);
+            case "RECLAIMENH":
+                if (opnd2 != null)
+                    return "RECLAIMENH subprotocol only has 1 operand";
+                return reclaimEnh(opnd1);
         }
+        return "Unknown subprotocol: " + subProtocol;
     }
 
 
-    private void backup(String filePath, String replicationDegString) throws RemoteException {
+    private String backup(String filePath, String replicationDegString) throws RemoteException {
         if (!MessageParser.validReplicationDeg(replicationDegString))
-            throw new IllegalArgumentException("BACKUP replication degree must be a single digit integer");
+            return "BACKUP replication degree must be a single digit integer";
 
         final int replicationDeg = Integer.parseInt(replicationDegString);
 
-        service.backup(filePath, replicationDeg);
+        return service.backup(filePath, replicationDeg);
+    }
+    private String backupEnh(String filePath, String replicationDegString) throws RemoteException {
+        if (!MessageParser.validReplicationDeg(replicationDegString))
+            return "BACKUPENH replication degree must be a single digit integer";
+
+        final int replicationDeg = Integer.parseInt(replicationDegString);
+
+        return service.backupEnh(filePath, replicationDeg);
     }
 
-    private void restore(String filename) throws RemoteException {
-        service.restore(filename);
+    private String restore(String filename) throws RemoteException {
+        return service.restore(filename);
+    }
+    private String restoreEnh(String filename) throws RemoteException {
+        return service.restoreEnh(filename);
     }
 
 
-    private void delete(String filename) throws RemoteException {
-        service.delete(filename);
+    private String delete(String filename) throws RemoteException {
+        return service.delete(filename);
+    }
+    private String deleteEnh(String filename) throws RemoteException {
+        return service.delete(filename);
     }
 
-    private void reclaim(String spaceString) throws RemoteException {
+    private String reclaim(String spaceString) throws RemoteException {
         if (!spaceString.matches("^\\d+$"))
-            throw  new IllegalArgumentException("RECLAIM space must be an integer");
+            return "RECLAIM space must be an integer";
 
         final long space = Long.parseLong(spaceString);
 
-        service.reclaim(space);
+        return service.reclaim(space);
     }
+    private String reclaimEnh(String spaceString) throws RemoteException {
+        if (!spaceString.matches("^\\d+$"))
+            return "RECLAIM space must be an integer";
 
+        final long space = Long.parseLong(spaceString);
+
+        return service.reclaim(space);
+    }
 
 
     public static void main(String [] args) {
@@ -98,10 +130,9 @@ public class TestApp {
         TestApp app = new TestApp(peerAp);
         try {
             app.connect();
-            app.execute(subProtocol, opnd1, opnd2);
+            System.out.println(app.execute(subProtocol, opnd1, opnd2));
         } catch (RemoteException | NotBoundException e) {
-            e.printStackTrace();
-            return;
+            System.out.println("Failed to connect to peer " + peerAp);
         }
     }
 }

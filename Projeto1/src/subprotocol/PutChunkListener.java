@@ -44,7 +44,7 @@ public class PutChunkListener extends Subprotocol implements Observer {
                 pw.write(msg.getBody(), 0, msg.getBody().length);
                 pw.flush();
                 pw.close();
-                chunksMetadataManager.addFileIfNotExists(msg.getFileId(), msg.getChunkNo(), msg.getReplicationDeg(), new HashSet<>());
+                chunksMetadataManager.addFileIfNotExists(msg.getFileId(), msg.getChunkNo(), msg.getReplicationDeg(), Long.toString(msg.getBody().length), new HashSet<>());
             }
 
 
