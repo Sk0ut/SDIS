@@ -106,7 +106,7 @@ public class Peer implements BackupService {
 
         /*
         try {
-            //backup((new File("Pikachu.png")).getCanonicalPath(), 1);
+            backup((new File("Pikachu.png")).getCanonicalPath(), 1);
             //delete((new File("Pikachu.png")).getCanonicalPath());
             //restore((new File("Pikachu.png").getCanonicalPath()));
         } catch (RemoteException e) {
@@ -139,9 +139,10 @@ public class Peer implements BackupService {
         }
 
         try {
-            BackupInitiator bi = new BackupInitiator(path, "" + localId, replicationDeg, mcChannel, mdbChannel);
-            bi.sendChunks();
+            BackupInitiator bi = new BackupInitiator(filepath, "" + localId, replicationDeg, mcChannel, mdbChannel);
             bi.storeMetadata();
+            bi.sendChunks();
+            bi.updateMetadata();
         } catch (IOException e) {
             return "Failed to backup file " + filepath;
         }

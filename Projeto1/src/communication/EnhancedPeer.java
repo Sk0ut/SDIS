@@ -1,10 +1,7 @@
 package communication;
 
 import client.BackupService;
-import subprotocol.DeleteListener;
-import subprotocol.GetChunkListener;
-import subprotocol.PutChunkListener;
-import subprotocol.StoredListener;
+import subprotocol.*;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -29,6 +26,7 @@ public class EnhancedPeer extends Peer {
         new PutChunkListener("" + localId, mcChannel, mdbChannel).start();
         new StoredListener(""+localId, mcChannel).start();
         new DeleteListener(""+localId, mcChannel).start();
+        new DeleteEnhListener("" + localId, mcChannel).start();
         new GetChunkListener(""+localId, mcChannel, mdrChannel).start();
     }
 
@@ -46,7 +44,7 @@ public class EnhancedPeer extends Peer {
 
     public String deleteEnh(String filepath) throws RemoteException
     {
-        return "Not implemented";
+        return delete(filepath);
     }
 
     public String reclaimEnh(long space) throws RemoteException {

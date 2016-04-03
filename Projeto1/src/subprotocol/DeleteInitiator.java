@@ -30,12 +30,13 @@ public class DeleteInitiator {
             mcChannel.send(message);
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException ignored) { }
+            } catch (InterruptedException ignored) {}
 
         }
     }
 
     public void setMetadata() throws IOException {
-        FilesMetadataManager.getInstance().removeIfExists(filePath);
+        FilesMetadataManager.getInstance().changeFileStatus(filePath, FilesMetadataManager.FileStatus.DELETED);
+
     }
 }
