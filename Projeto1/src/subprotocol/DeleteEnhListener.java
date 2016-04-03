@@ -31,10 +31,13 @@ public class DeleteEnhListener extends Subprotocol implements Observer{
         for (MessageParser parser : parsers) {
             try {
                 Message msg = parser.parse((byte[]) arg);
+                if (msg.getSenderId().equals(getLocalId()))
+                    return;
                 if (FilesMetadataManager.getInstance().findDeletedFileById(msg.getFileId()) != null) {
                     Message send = new DeleteMessage(getLocalId(), msg.getFileId());
                     mc.send(send.getBytes());
                 }
+                return;
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (MalformedMessageException ignored) {}

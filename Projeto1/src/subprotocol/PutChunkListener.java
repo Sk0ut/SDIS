@@ -2,6 +2,7 @@ package subprotocol;
 
 import communication.Message;
 import communication.MessageParser;
+import communication.Peer;
 import communication.message.PutChunkMessage;
 import communication.message.StoredMessage;
 import general.*;
@@ -35,12 +36,12 @@ public class PutChunkListener extends Subprotocol implements Observer {
 
             ChunksMetadataManager chunksMetadataManager = ChunksMetadataManager.getInstance();
 
-            long freeSpace = SpaceMetadataManager.getInstance().getAvailableSpace() - ChunksMetadataManager.getInstance().getOccupiedSpace();
-
-            if (msg.getSenderId().equals(getLocalId()) || msg.getBody().length > freeSpace)
+            if (msg.getSenderId().equals(getLocalId()))
                 return;
 
             if (chunksMetadataManager.findChunk(msg.getFileId(), msg.getChunkNo()) == null) {
+                if (msg.getBody().length > Peer.freeSpace())
+                    return;
                 String fileName = "peer" + getLocalId() + "/" + msg.getFileId() + "-" + msg.getChunkNo() + ".chunk";
                 FileOutputStream pw = new FileOutputStream(fileName);
                 pw.write(msg.getBody(), 0, msg.getBody().length);

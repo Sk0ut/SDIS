@@ -44,7 +44,8 @@ public class EnhancedPeer extends Peer {
 
     public String deleteEnh(String filepath) throws RemoteException
     {
-        return delete(filepath);
+        return "DELETEENH subprotocol will search for messages about deleted files and send a DELETE message again to the system.\n"
+                + delete(filepath);
     }
 
     public String reclaimEnh(long space) throws RemoteException {

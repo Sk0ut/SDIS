@@ -98,8 +98,9 @@ public class RestoreInitiator implements Observer {
         synchronized (this) {
             if (chunksToReceive.contains(chunkNo)) {
                 try {
-                    file.write(message.getBody(), chunkNo * MAXCHUNKSIZE, message.getBody().length);
-                    chunksToReceive.remove(chunkNo);
+                    file.seek(chunkNo * MAXCHUNKSIZE);
+                    file.write(message.getBody(), 0, message.getBody().length);
+                    chunksToReceive.remove(new Integer(chunkNo));
                 } catch (IOException ignored) {}
             }
         }

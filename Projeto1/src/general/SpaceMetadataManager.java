@@ -47,7 +47,6 @@ public class SpaceMetadataManager {
 
     private void save() throws IOException {
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-        System.out.println(this.reclaimedSpace);
         bw.write("" + this.reclaimedSpace);
         bw.flush();
         bw.close();

@@ -30,7 +30,7 @@ public class Peer implements BackupService {
         final int PORT_MDR = 8889;
         final String INET_ADDR_MDB = "224.0.0.5";
         final int PORT_MDB = 8890;
-        final int SENDERID = 1;
+        final int SENDERID = 3;
         final int MIN_ARGS = 7;
         final int MAX_ARGS = 8;
 
@@ -129,6 +129,10 @@ public class Peer implements BackupService {
         registry.rebind(Integer.toString(localId), service);
     }
 
+    public static long freeSpace() {
+        return SpaceMetadataManager.getInstance().getAvailableSpace() - ChunksMetadataManager.getInstance().getOccupiedSpace();
+    }
+
     @Override
     public String backup(String filepath, int replicationDeg) throws RemoteException {
         String path;
@@ -139,7 +143,7 @@ public class Peer implements BackupService {
         }
 
         try {
-            BackupInitiator bi = new BackupInitiator(filepath, "" + localId, replicationDeg, mcChannel, mdbChannel);
+            BackupInitiator bi = new BackupInitiator(path, "" + localId, replicationDeg, mcChannel, mdbChannel);
             bi.storeMetadata();
             bi.sendChunks();
             bi.updateMetadata();
@@ -198,7 +202,7 @@ public class Peer implements BackupService {
     @Override
     public String reclaim(long space) throws RemoteException {
         SpaceMetadataManager spaceManager = SpaceMetadataManager.getInstance();
-        if (space <= spaceManager.getReclaimedSpace()) {
+        if (space <= freeSpace() + spaceManager.getReclaimedSpace()) {
             try {
                 spaceManager.setReclaimedSpace(space);
             } catch (IOException e) {
@@ -207,12 +211,16 @@ public class Peer implements BackupService {
             return "Reclaimed " + space + " bytes. Reserved backup space: " + spaceManager.getAvailableSpace() + " bytes.";
         }
 
-        // Check for unused space
-
-       // ReclaimInitiator ri = new ReclaimInitiator(space, "" + localId, mcChannel);
-
         try {
             spaceManager.setReclaimedSpace(space);
+            ReclaimInitiator ri = new ReclaimInitiator(space, "" + localId, mcChannel);
+            ri.deleteChunks(-freeSpace());
+            if (freeSpace() < 0) {
+                spaceManager.setReclaimedSpace(space + freeSpace());
+                return "Unable to reclaim " + space + " bytes, reclaimed " + spaceManager.getReclaimedSpace() + " bytes instead." +
+                        "Reserved backup space: " + spaceManager.getAvailableSpace() + " bytes";
+            }
+
         } catch (IOException e) {
             return "Failed to reclaim space";
         }

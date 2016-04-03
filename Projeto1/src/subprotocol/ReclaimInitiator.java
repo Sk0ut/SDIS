@@ -1,6 +1,7 @@
 package subprotocol;
 
 import communication.Message;
+import communication.Peer;
 import communication.message.RemovedMessage;
 import general.ChunkIdentifier;
 import general.ChunksMetadataManager;
@@ -23,13 +24,14 @@ public class ReclaimInitiator {
         this.mc = mc;
     }
 
-    private List<ChunkIdentifier> deleteChunks() throws IOException {
+    public void deleteChunks(long size) throws IOException {
         List<ChunkIdentifier> chunks = ChunksMetadataManager.getInstance().getNRemovableChunks(space);
-        for(ChunkIdentifier chunk : chunks){
+
+        while (Peer.freeSpace() < 0 && chunks.size() != 0) {
+            ChunkIdentifier chunk = chunks.remove(0);
             ChunksMetadataManager.getInstance().removeFileIfExists(chunk.getFileId(), chunk.getChunkNo());
             Message message = new RemovedMessage(localId, chunk.getFileId(), chunk.getChunkNo());
             mc.send(message.getBytes());
         }
-        return null;
     }
 }
