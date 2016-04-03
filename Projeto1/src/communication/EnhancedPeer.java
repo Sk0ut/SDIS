@@ -20,7 +20,7 @@ public class EnhancedPeer extends Peer {
         }
         startMulticastChannelListeners();
 
-        new PutChunkListener("" + localId, mcChannel, mdbChannel).start();
+        new EnhancedPutChunkListener("" + localId, mcChannel, mdbChannel).start();
         new StoredListener(""+localId, mcChannel).start();
         new DeleteListener(""+localId, mcChannel).start();
         new DeleteEnhListener("" + localId, mcChannel).start();
@@ -32,7 +32,8 @@ public class EnhancedPeer extends Peer {
     @Override
     public String backupEnh(String filepath, int replicationDeg) throws RemoteException
     {
-        return "Not implemented";
+        return "BACKUPENH protocol is implemented by non-iniator peers by not storing chunks whose replication degree is above the desired.\n" +
+                backup(filepath, replicationDeg);
     }
 
     public String restoreEnh(String filepath) throws RemoteException
@@ -47,6 +48,6 @@ public class EnhancedPeer extends Peer {
     }
 
     public String reclaimEnh(long space) throws RemoteException {
-        return "Reclaim enhanced is not testable by invoking RECLAIMENH. Executing RECLAIM instead.\n" + reclaim(space);
+        return "Not implemented";
     }
 }

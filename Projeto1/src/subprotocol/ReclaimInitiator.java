@@ -24,7 +24,6 @@ public class ReclaimInitiator {
 
     public void deleteChunks() throws IOException {
         List<ChunkIdentifier> chunks = ChunksMetadataManager.getInstance().getNRemovableChunks(space);
-        System.out.println("Can delete " + chunks.size() + " chunks");
 
         while (Peer.freeSpace() < 0 && chunks.size() != 0) {
             ChunkIdentifier chunk = chunks.remove(0);
@@ -34,7 +33,6 @@ public class ReclaimInitiator {
             if (f.exists() && !f.isDirectory()) {
                 f.delete();
             }
-            System.out.println("Deleted chunk " + fileName);
             Message message = new RemovedMessage(localId, chunk.getFileId(), chunk.getChunkNo());
             mc.send(message.getBytes());
         }

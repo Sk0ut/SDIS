@@ -30,7 +30,7 @@ public class Peer implements BackupService {
         final int PORT_MDR = 8889;
         final String INET_ADDR_MDB = "224.0.0.5";
         final int PORT_MDB = 8890;
-        final int SENDERID = 2;
+        final int SENDERID = 1;
         final int MIN_ARGS = 7;
         final int MAX_ARGS = 8;
 
@@ -41,7 +41,7 @@ public class Peer implements BackupService {
         int mdbPort = PORT_MDB;
         String mdrAddress = INET_ADDR_MDR;
         int mdrPort = PORT_MDR;
-        boolean enhanced = false;
+        boolean enhanced = true;
 
         if (args.length != 0) {
             if (! (MIN_ARGS <= args.length && args.length <= MAX_ARGS) ) {

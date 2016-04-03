@@ -47,8 +47,6 @@ public class ReplicationDegRestoreInitiator extends Subprotocol implements Obser
 
         mc.deleteObserver(this);
 
-        System.out.println(backupStarted.get());
-
         if (!backupStarted.get()) {
             ChunksMetadataManager.Entry entry = ChunksMetadataManager.getInstance().findChunk(fileId, chunkNo);
 
