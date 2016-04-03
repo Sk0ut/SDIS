@@ -35,7 +35,9 @@ public class PutChunkListener extends Subprotocol implements Observer {
 
             ChunksMetadataManager chunksMetadataManager = ChunksMetadataManager.getInstance();
 
-            if (msg.getSenderId().equals(getLocalId()))
+            long freeSpace = SpaceMetadataManager.getInstance().getAvailableSpace() - ChunksMetadataManager.getInstance().getOccupiedSpace();
+
+            if (msg.getSenderId().equals(getLocalId()) || msg.getBody().length > freeSpace)
                 return;
 
             if (chunksMetadataManager.findChunk(msg.getFileId(), msg.getChunkNo()) == null) {
@@ -46,9 +48,6 @@ public class PutChunkListener extends Subprotocol implements Observer {
                 pw.close();
                 chunksMetadataManager.addFileIfNotExists(msg.getFileId(), msg.getChunkNo(), msg.getReplicationDeg(), Long.toString(msg.getBody().length), new HashSet<>());
             }
-
-
-            Logger.getInstance().printLog(msg.getHeader());
 
             try {
                 Thread.sleep((long) (Math.random() * 400));

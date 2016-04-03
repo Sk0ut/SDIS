@@ -201,15 +201,20 @@ public class Peer implements BackupService {
             try {
                 spaceManager.setReclaimedSpace(space);
             } catch (IOException e) {
-                e.printStackTrace();
+                return "Failed to reclaim space";
             }
             return "Reclaimed " + space + " bytes. Reserved backup space: " + spaceManager.getAvailableSpace() + " bytes.";
         }
 
         // Check for unused space
 
-        ReclaimInitiator ri = new ReclaimInitiator(space, "" + localId, mcChannel);
+       // ReclaimInitiator ri = new ReclaimInitiator(space, "" + localId, mcChannel);
 
+        try {
+            spaceManager.setReclaimedSpace(space);
+        } catch (IOException e) {
+            return "Failed to reclaim space";
+        }
         return "Reclaimed " + space + " bytes. Reserved backup space: " + spaceManager.getAvailableSpace() + " bytes";
     }
 
