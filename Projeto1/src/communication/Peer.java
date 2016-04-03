@@ -47,13 +47,16 @@ public class Peer implements BackupService{
 
 
         new PutChunkListener("" + localId, mcChannel, mdbChannel).start();
+        new StoredListener(""+localId, mcChannel).start();
+        new DeleteListener(""+localId, mcChannel).start();
 
         new Thread(mcChannel).start();
         new Thread(mdbChannel).start();
         new Thread(mdrChannel).start();
 
         try {
-            backup("C:\\Users\\Afonso\\Desktop\\Faculdade\\2º Semestre\\SDIS\\Projeto1\\250px-025Pikachu.png", 1);
+            backup("C:\\Users\\Afonso\\Desktop\\Faculdade\\2º Semestre\\SDIS\\Projeto1\\ba15a584ca7d7265.jpg", 1);
+            delete("C:\\Users\\Afonso\\Desktop\\Faculdade\\2º Semestre\\SDIS\\Projeto1\\ba15a584ca7d7265.jpg");
         } catch (RemoteException e) {
             e.printStackTrace();
         }

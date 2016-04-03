@@ -28,9 +28,8 @@ public class DeleteListener extends Subprotocol implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        Message msg = null;
         try {
-            msg = parser.parse((byte[]) arg);
+            Message msg = parser.parse((byte[]) arg);
             String filePrefix = "peer" + getLocalId() + "/" + msg.getFileId();
             List<String> chunks = ChunksMetadataManager.getInstance().getChunksFromFile(msg.getFileId());
             for (String chunk : chunks) {
@@ -38,12 +37,13 @@ public class DeleteListener extends Subprotocol implements Observer {
                 File f = new File(fileName);
                 ChunksMetadataManager.getInstance().removeFileIfExists(msg.getFileId(), chunk);
                 if (f.exists() && !f.isDirectory()) {
-                    f.delete();
+                    System.out.println(f.getAbsolutePath());
+                    System.out.println(f.delete());
                 }
             }
             Logger.getInstance().printLog(msg.getHeader());
-        } catch (IOException | MalformedMessageException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }
+        } catch (MalformedMessageException ignored) {}
     }
 }

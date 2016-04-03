@@ -28,6 +28,10 @@ public class DeleteInitiator {
         for(int attempt = 0; attempt < ATTEMPTS; ++attempt) {
             byte[] message = new DeleteMessage(localId, fileId).getBytes();
             mcChannel.send(message);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) { }
+
         }
     }
 

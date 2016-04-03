@@ -26,7 +26,7 @@ public class FilesMetadataManager {
         }
 
         public String toString() {
-            return filePath + " " + modificationDate + " " + fileId + " " + numChunks;
+            return filePath + "|" + modificationDate + "|" + fileId + "|" + numChunks;
         }
     }
 
@@ -47,6 +47,10 @@ public class FilesMetadataManager {
     public void init(String localId) throws IOException {
         Path path = FileSystems.getDefault().getPath("peer" + localId, FILES_METADATA_FILENAME);
         file = path.toFile();
+
+        if (!file.exists()) {
+            file.createNewFile();
+        }
         load();
     }
 
@@ -72,7 +76,7 @@ public class FilesMetadataManager {
     }
 
     private void parseLine(String line) {
-        String[] elements = line.split(" ");
+        String[] elements = line.split("\\|");
         String filePath = elements[0];
         String modificationDate = elements[1];
         String fileId = elements[2];
