@@ -1,4 +1,4 @@
-# Specifictaion
+# Specification
 
 ### Purpose of the Application
 
